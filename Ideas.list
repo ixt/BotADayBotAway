@@ -1,4 +1,0 @@
-https://twitter.com/awwang1/status/932696394414116865 
-https://twitter.com/HoaxWars/status/930921871058415616
-https://twitter.com/LilKevooo/status/930097359324897281
-    - chromium --headless --disable-gpu https://mobile.twitter.com/realDonaldTrump/status/932578255810498560 --hide-scrollbars --virtual-time-budget=2500000 --window-size=300,500 --force-device-scale-factor=2 --hide-scroll-bars --screenshot
