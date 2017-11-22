@@ -22,7 +22,8 @@ SCREENNAMES=$(mktemp)
 lynx -dump -listonly 'https://twitter.com/search?f=tweets&q=%20can%20we%20use%20your%20video%20%20for%20credit' | grep "/status/" | cut -d"/" -f6 > $LATESTIDS
 
 fuck(){
-    ../../../Tools/tweet.sh/tweet.sh reply $1 "Fuck you, Pay them."
+    # ../../../Tools/tweet.sh/tweet.sh reply $1 "Fuck you, Pay them."
+    t reply $1 "Fuck you, Pay them."
 }
 
 pushd $SCRIPTDIR 
