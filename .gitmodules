@@ -1,3 +1,6 @@
 [submodule "Tools/tweet.sh"]
 	path = Tools/tweet.sh
 	url = https://github.com/piroor/tweet.sh
+[submodule "2017/11/23/twemoji"]
+	path = 2017/11/23/twemoji
+	url = https://github.com/twitter/twemoji
