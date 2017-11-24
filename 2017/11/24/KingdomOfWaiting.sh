@@ -7,5 +7,5 @@ pushd $SCRIPTDIR
 id=$(head -1 .youtubelist | cut -d, -f1)
 title=$(head -1 .youtubelist | cut -d, -f2)
 ../../../Tools/tweet.sh/tweet.sh post "@Chadunda $title https://youtube.com/watch?v=$id"
-sed 1d .youtubelist
+sed -i 1d .youtubelist
 popd
