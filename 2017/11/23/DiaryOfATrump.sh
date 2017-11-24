@@ -17,30 +17,6 @@ LATESTTWEETS=$(mktemp)
 TEMP=$(mktemp)
 twelveHoursAgo=$(date --date="- 12 hours" +%s)
 
-# Get the latest tweets and check how old they are, remove from the list the
-# ones older than 12 hours old, if they are new check the quantity of retweets & favs
-t timeline realdonaldtrump -c | cut -d"," -f1 | tail -n+2 > ${LATESTTWEETS}
-cp ${LATESTTWEETS} ${TEMP}
-TEMPTWEETSTORE=$(mktemp)
-echo "[INFO]: Grabbing tweets"
-while read entry; do 
-    ../../../Tools/tweet.sh/tweet.sh get ${entry} > ${TEMPTWEETSTORE}
-    postedAt=$(jq .created_at ${TEMPTWEETSTORE} | xargs -I@ date --date="@" +%s)
-    if [ "${postedAt}" -lt "${twelveHoursAgo}" ]; then
-        sed -i "/^${entry}$/d" ${TEMP}
-    else
-        retweets=$(jq .retweet_count ${TEMPTWEETSTORE})
-        favorites=$(jq .favorite_count ${TEMPTWEETSTORE})
-        if [ "${favorites}" -eq "0" ]; then 
-            sed -i "/^${entry}$/d" ${TEMP}
-        else 
-            value=$(bc -l <<< "${favorites} + ${retweets}") 
-            sed -i "s/${entry}/${value},${entry}/g" ${TEMP}       
-        fi
-    fi
-done < ${LATESTTWEETS}
-sort ${TEMP} > ${LATESTTWEETS}
-
 screenshot(){
     # We repeat this 4 times just to make it takes it 
     fileSize="0"
@@ -100,6 +76,30 @@ process_photo(){
 }
 
 pushd $SCRIPTDIR 
+# Get the latest tweets and check how old they are, remove from the list the
+# ones older than 12 hours old, if they are new check the quantity of retweets & favs
+t timeline realdonaldtrump -c | cut -d"," -f1 | tail -n+2 > ${LATESTTWEETS}
+cp ${LATESTTWEETS} ${TEMP}
+TEMPTWEETSTORE=$(mktemp)
+echo "[INFO]: Grabbing tweets"
+while read entry; do 
+    ../../../Tools/tweet.sh/tweet.sh get ${entry} > ${TEMPTWEETSTORE}
+    postedAt=$(jq .created_at ${TEMPTWEETSTORE} | xargs -I@ date --date="@" +%s)
+    if [ "${postedAt}" -lt "${twelveHoursAgo}" ]; then
+        sed -i "/^${entry}$/d" ${TEMP}
+    else
+        retweets=$(jq .retweet_count ${TEMPTWEETSTORE})
+        favorites=$(jq .favorite_count ${TEMPTWEETSTORE})
+        if [ "${favorites}" -eq "0" ]; then 
+            sed -i "/^${entry}$/d" ${TEMP}
+        else 
+            value=$(bc -l <<< "${favorites} + ${retweets}") 
+            sed -i "s/${entry}/${value},${entry}/g" ${TEMP}       
+        fi
+    fi
+done < ${LATESTTWEETS}
+sort ${TEMP} > ${LATESTTWEETS}
+
 #Does emoji index exist? 
 [ ! -e "emoji.json" ] && wget -qO emoji.json https://raw.githubusercontent.com/github/gemoji/master/db/emoji.json
 tweetId=$(tail -n1 ${LATESTTWEETS} | cut -d, -f2 )
