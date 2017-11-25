@@ -22,7 +22,7 @@ screenshot(){
     fileSize="0"
     echo "[INFO]: Screenshot"
     while [ "${fileSize}" -lt "200000" ]; do
-        chromium --headless --disable-gpu $tweetLink --hide-scrollbars --virtual-time-budget=20170120 --window-size=${width},${height} --force-device-scale-factor=2 --hide-scroll-bars --screenshot=${SCREENSHOT}
+        chromium-browser --headless --disable-gpu $tweetLink --hide-scrollbars --virtual-time-budget=20170120 --window-size=${width},${height} --force-device-scale-factor=2 --hide-scroll-bars --screenshot=${SCREENSHOT}
         fileSize=$(ls -l ${SCREENSHOT} | cut -d" " -f5)
     done
 }
@@ -127,5 +127,5 @@ while read word; do
 done < <(jq .full_text $TEMP | sed "s/[^A-Za-z ]//g;s/ /\n/g;s/.*/\L&/g" | sed "/^$/d")
 process_photo ${lineCount}
 
-t update -f output.png
+t update " " -f output.png
 popd
