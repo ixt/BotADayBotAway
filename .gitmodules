@@ -4,3 +4,6 @@
 [submodule "2017/11/23/twemoji"]
 	path = 2017/11/23/twemoji
 	url = https://github.com/twitter/twemoji
+[submodule "Tools/RAKE.sh"]
+	path = Tools/RAKE.sh
+	url = https://github.com/ixt/RAKE.sh
