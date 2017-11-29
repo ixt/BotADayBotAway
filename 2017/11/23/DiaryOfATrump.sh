@@ -78,7 +78,7 @@ process_photo(){
 pushd $SCRIPTDIR 
 # Get the latest tweets and check how old they are, remove from the list the
 # ones older than 12 hours old, if they are new check the quantity of retweets & favs
-t timeline realdonaldtrump -c | | sed -n "/.*\(realDonaldTrump\).*/p" | cut -d"," -f1 | tail -n+2 > ${LATESTTWEETS}
+t timeline realdonaldtrump -c | sed -n "/.*\(realDonaldTrump\).*/p" | cut -d"," -f1 | tail -n+2 > ${LATESTTWEETS}
 cp ${LATESTTWEETS} ${TEMP}
 TEMPTWEETSTORE=$(mktemp)
 echo "[INFO]: Grabbing tweets"
