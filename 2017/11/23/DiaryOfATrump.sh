@@ -22,7 +22,11 @@ screenshot(){
     fileSize="0"
     echo "[INFO]: Screenshot"
     while [ "${fileSize}" -lt "200000" ]; do
+        if [ -e "/usr/bin/chromium" ]; then
+        chromium --headless --disable-gpu $tweetLink --hide-scrollbars --virtual-time-budget=20170120 --window-size=${width},${height} --force-device-scale-factor=2 --hide-scroll-bars --screenshot=${SCREENSHOT}
+        else
         chromium-browser --headless --disable-gpu $tweetLink --hide-scrollbars --virtual-time-budget=20170120 --window-size=${width},${height} --force-device-scale-factor=2 --hide-scroll-bars --screenshot=${SCREENSHOT}
+        fi
         fileSize=$(ls -l ${SCREENSHOT} | cut -d" " -f5)
     done
 }
@@ -108,15 +112,17 @@ tweetLink="${tweetRoot}${tweetId}"
 screenshot
 
 CODEPOINTS=$(mktemp)
+wordList=$(mktemp)
 lineCount=$(jq .full_text $TEMP | sed -e "s/^\"//g;s/\"$//g" | fold -w 34 -s | wc -l )
 
+jq .full_text $TEMP | sed "s/north korea/north_korea/Ig" | sed "s/[^A-Za-z_ ]//g;s/ /\n/g;s/.*/\L&/g" | sed "/^$/d" > ${wordList}
+sed -i "/^it$/d;/^it's$/d" $wordList
+
 while read word; do
-    TAGS=".[] | select(.tags[] | test(\"^${word}\$\")) | .emoji" 
-    ALIASES=".[] | select(.aliases[] | test(\"^${word}\$\")) | .emoji"
-    if [ ! "$word" == "it" ]; then
-        jq "${TAGS}" emoji.json | sed 's/"//g' | uni2ascii -q -a U >> $CODEPOINTS
-        jq "${ALIASES}" emoji.json | sed 's/"//g' | uni2ascii -q -a U >> $CODEPOINTS
-    fi
+    TAGS=".[] | select(.tags[] | test(\"^${word}$\")) | .emoji" 
+    ALIASES=".[] | select(.aliases[] | test(\"^${word}$\")) | .emoji"
+    jq "${TAGS}" emoji.json | sed 's/"//g' | uni2ascii -q -a U >> $CODEPOINTS
+    jq "${ALIASES}" emoji.json | sed 's/"//g' | uni2ascii -q -a U >> $CODEPOINTS
     if grep "s$" <<< "$word" ; then
         _word=$(sed -e "s/s$//g" <<< "$word")
         TAGS=".[] | select(.tags[] | test(\"^${_word}\$\")) | .emoji" 
@@ -124,7 +130,7 @@ while read word; do
         jq "${TAGS}" emoji.json | sed 's/"//g' | uni2ascii -q -a U >> $CODEPOINTS
         jq "${ALIASES}" emoji.json | sed 's/"//g' | uni2ascii -q -a U >> $CODEPOINTS
     fi
-done < <(jq .full_text $TEMP | sed "s/[^A-Za-z ]//g;s/ /\n/g;s/.*/\L&/g" | sed "/^$/d")
+done < $wordList
 process_photo ${lineCount}
 
 t update " " -f output.png
