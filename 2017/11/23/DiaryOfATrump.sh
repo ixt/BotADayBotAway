@@ -6,7 +6,6 @@
 
 # Again using t to fix some missing features of tweet.sh
 
-tweetLink="https://mobile.twitter.com/realDonaldTrump/status/929511061954297857"
 tweetRoot="https://mobile.twitter.com/realDonaldTrump/status/"
 width="300"
 height="1000"
@@ -21,7 +20,7 @@ screenshot(){
     # We repeat this 4 times just to make it takes it 
     fileSize="0"
     echo "[INFO]: Screenshot"
-    while [ "${fileSize}" -lt "200000" ]; do
+    while [ "${fileSize}" -lt "20000" ]; do
         if [ -e "/usr/bin/chromium" ]; then
         chromium --headless --disable-gpu $tweetLink --hide-scrollbars --virtual-time-budget=20170120 --window-size=${width},${height} --force-device-scale-factor=2 --hide-scroll-bars --screenshot=${SCREENSHOT}
         else
@@ -106,8 +105,12 @@ sort ${TEMP} > ${LATESTTWEETS}
 
 #Does emoji index exist? 
 [ ! -e "emoji.json" ] && wget -qO emoji.json https://raw.githubusercontent.com/github/gemoji/master/db/emoji.json
-tweetId=$(tail -n1 ${LATESTTWEETS} | cut -d, -f2 )
-tweetLink="${tweetRoot}${tweetId}"
+if [ ! "$1" == "" ]; then 
+    tweetLink="$1"
+else
+    tweetId=$(tail -n1 ${LATESTTWEETS} | cut -d, -f2 )
+    tweetLink="${tweetRoot}${tweetId}"
+fi
 ../../../Tools/tweet.sh/tweet.sh get ${tweetLink} > $TEMP
 screenshot
 
@@ -115,23 +118,35 @@ CODEPOINTS=$(mktemp)
 wordList=$(mktemp)
 lineCount=$(jq .full_text $TEMP | sed -e "s/^\"//g;s/\"$//g" | fold -w 34 -s | wc -l )
 
-jq .full_text $TEMP | sed "s/north korea/north_korea/Ig" | sed "s/[^A-Za-z_ ]//g;s/ /\n/g;s/.*/\L&/g" | sed "/^$/d" > ${wordList}
+# We need to fix a few things
+jq .full_text $TEMP | sed \
+    -e "s/north korea/north_korea/Ig" \
+    -e "s/united kingdom/british/Ig" \
+    -e "s/[iI]slam/ star_and_crescent /Ig" \
+    -e "s/fine/money/Ig" \
+    | sed "s/[^A-Za-z_ ]//g;s/ /\n/g;s/.*/\L&/g" | sed "/^$/d" > ${wordList}
 sed -i "/^it$/d;/^it's$/d" $wordList
 
 while read word; do
     TAGS=".[] | select(.tags[] | test(\"^${word}$\")) | .emoji" 
     ALIASES=".[] | select(.aliases[] | test(\"^${word}$\")) | .emoji"
+    DESCRIPTION=".[] | select(.description[] | test(\"^${word}$\")) | .emoji"
     jq "${TAGS}" emoji.json | sed 's/"//g' | uni2ascii -q -a U >> $CODEPOINTS
+    jq "${DESCRIPTION}" emoji.json 2>/dev/null | sed 's/"//g' | uni2ascii -q -a U >> $CODEPOINTS
     jq "${ALIASES}" emoji.json | sed 's/"//g' | uni2ascii -q -a U >> $CODEPOINTS
     if grep "s$" <<< "$word" ; then
         _word=$(sed -e "s/s$//g" <<< "$word")
-        TAGS=".[] | select(.tags[] | test(\"^${_word}\$\")) | .emoji" 
-        ALIASES=".[] | select(.aliases[] | test(\"^${_word}\$\")) | .emoji"
+        TAGS=".[] | select(.tags[] | test(\"^${_word}$\")) | .emoji" 
+        ALIASES=".[] | select(.aliases[] | test(\"^${_word}$\")) | .emoji"
+        DESCRIPTION=".[] | select(.description[] | test(\"^${_word}$\")) | .emoji"
         jq "${TAGS}" emoji.json | sed 's/"//g' | uni2ascii -q -a U >> $CODEPOINTS
+        jq "${DESCRIPTION}" emoji.json 2>/dev/null | sed 's/"//g' | uni2ascii -q -a U >> $CODEPOINTS
         jq "${ALIASES}" emoji.json | sed 's/"//g' | uni2ascii -q -a U >> $CODEPOINTS
     fi
 done < $wordList
+sed -i -e "s/\\uFE0F//g" $CODEPOINTS
 process_photo ${lineCount}
 
 t update " " -f output.png
+#display output.png
 popd
