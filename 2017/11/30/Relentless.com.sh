@@ -26,8 +26,8 @@ while read abstract; do
     sum=$(echo $cleanAbstract | sha256sum | cut -d" " -f1)
     if ! egrep -q "^$sum$" checked; then
         echo $sum >> checked
-        sed -n ${lineNo}p $list | sed -e "s/Amazon/Relentless.com/Ig;s/AWS/RWS/Ig" | cut -d: -f2- | sed -e "s/^ //g"
+        TWEET=$(sed -n ${lineNo}p $list | sed -e "s/Amazon/Relentless.com/Ig;s/AWS/RWS/Ig" | cut -d: -f2- | sed -e "s/^ //g")
+        ../../../Tools/tweet.sh/tweet.sh post "$TWEET"
     fi
 done < $abstract
-#../../../Tools/tweet.sh/tweet.sh post "Phrase"
 popd >/dev/null
