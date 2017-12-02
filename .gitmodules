@@ -7,3 +7,6 @@
 [submodule "Tools/RAKE.sh"]
 	path = Tools/RAKE.sh
 	url = https://github.com/ixt/RAKE.sh
+[submodule "Tools/markov-bash"]
+	path = Tools/markov-bash
+	url = https://github.com/jcsongor/markov-bash
