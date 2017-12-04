@@ -6,7 +6,8 @@
 
 # Again using t to fix some missing features of tweet.sh
 
-tweetRoot="https://mobile.twitter.com/realDonaldTrump/status/"
+USER="realdonaldtrump"
+tweetRoot="https://mobile.twitter.com/${USER}/status/"
 width="300"
 height="1000"
 SCRIPTDIR=$(dirname $0)
@@ -81,7 +82,7 @@ process_photo(){
 pushd $SCRIPTDIR 
 # Get the latest tweets and check how old they are, remove from the list the
 # ones older than 12 hours old, if they are new check the quantity of retweets & favs
-t timeline realdonaldtrump -c | sed -n "/.*\(realDonaldTrump\).*/p" | cut -d"," -f1 | tail -n+2 > ${LATESTTWEETS}
+t timeline ${USER} -c | sed -n "/.*\(${USER}\).*/Ip" | cut -d"," -f1 | tail -n+2 > ${LATESTTWEETS}
 cp ${LATESTTWEETS} ${TEMP}
 TEMPTWEETSTORE=$(mktemp)
 echo "[INFO]: Grabbing tweets"
@@ -101,8 +102,20 @@ while read entry; do
         fi
     fi
 done < ${LATESTTWEETS}
-sort ${TEMP} > ${LATESTTWEETS}
 
+# If no tweets are found to be young enough just fallback to the newest tweet
+if grep "[0-9]" ${TEMP}; then
+    sort ${TEMP} > ${LATESTTWEETS}
+else 
+    entry=$(t timeline ${USER} -c | sed -n "/.*\(${USER}\).*/Ip" | sed -e "/,\"RT/d" | cut -d"," -f1 | tail -n+2 | head -1)
+    ../../../Tools/tweet.sh/tweet.sh get ${entry} > ${TEMPTWEETSTORE}
+    retweets=$(jq .retweet_count ${TEMPTWEETSTORE})
+    favorites=$(jq .favorite_count ${TEMPTWEETSTORE})
+    value=$(bc -l <<< "${favorites} + ${retweets}") 
+    sed -i "s/${entry}/${value},${entry}/g" ${TEMP}       
+fi
+
+echo ${LATESTTWEETS}
 #Does emoji index exist? 
 [ ! -e "emoji.json" ] && wget -qO emoji.json https://raw.githubusercontent.com/github/gemoji/master/db/emoji.json
 if [ ! "$1" == "" ]; then 
@@ -112,6 +125,7 @@ else
     tweetLink="${tweetRoot}${tweetId}"
 fi
 ../../../Tools/tweet.sh/tweet.sh get ${tweetLink} > $TEMP
+echo ${tweetLink}
 screenshot
 
 CODEPOINTS=$(mktemp)
@@ -147,6 +161,6 @@ done < $wordList
 sed -i -e "s/\\uFE0F//g" $CODEPOINTS
 process_photo ${lineCount}
 
-#t update " " -f output.png
-display output.png
+t update " " -f output.png
+#display output.png
 popd
