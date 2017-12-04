@@ -50,5 +50,5 @@ else
 fi
 
 echo $TWEETABLE
-../../../Tools/tweet.sh/tweet.sh post "${FULLTEXT}"
+../../../Tools/tweet.sh/tweet.sh post "${TWEETABLE}"
 popd >/dev/null
