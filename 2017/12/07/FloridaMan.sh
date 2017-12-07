@@ -25,5 +25,5 @@ wget -qO- 'https://www.reddit.com/r/tifu/controversial.json?t=week&limit=100' |\
     jq .data.children[].data.title | sed -e "/ my /d;/ I /d;/ she /d" | grep -i '^"TIFU by' |\
     sed -e 's/^"TIFU by//gI;s/"$//g' | xargs -I @ echo "Florida man arrested for @" > $TEMP
 
-../../../Tools/tweet.sh/tweet.sh post "$(shuf $FILE | head -1)"
+../../../Tools/tweet.sh/tweet.sh post "$(shuf $TEMP | head -1)"
 popd
