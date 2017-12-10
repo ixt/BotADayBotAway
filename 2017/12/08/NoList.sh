@@ -3,7 +3,7 @@ set -uo pipefail
 IFS=$'\n\t'
 
 # Basically makes a list of users who have "No lists" in their bio.
-# https://twitter.com/Lord_32bit/status/938564683086356480 
+# https://twitter.com/DLStauffer/status/937511654777954304
 SCRIPTDIR=$(dirname $0)
 TEMP=$(mktemp)
 TEMPUSER=$(mktemp)

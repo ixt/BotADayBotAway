@@ -9,7 +9,6 @@ SCRIPTDIR=$(dirname $0)
 TEMP=$(mktemp)
 TEMPTWEETS=$(mktemp)
 CURRENTTIME=$(date --date="- 10 minutes" -u +%s)
-URL="https://mobile.twitter.com/search/users?q=NO%20LISTS&s=typd"
 
 pushd $SCRIPTDIR 
 
