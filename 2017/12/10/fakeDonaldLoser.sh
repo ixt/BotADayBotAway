@@ -53,8 +53,8 @@ while read TWEET; do
 done < $tempTweets
 
 
-#while read cleanup; do
-#   sed -i -e "/${cleanup}/d" .seenids
-#done < ${seenIds}
+while read cleanup; do
+   sed -i -e "/${cleanup}/d" .seenids
+done < ${seenIds}
 
 popd
