@@ -45,15 +45,16 @@ done < <( cat $tempTweets | sed -e "s/ /\n/g" | sed -e "s/[^A-Za-z -]//g" |\
 
 # apply changes
 sed -i -f $patternDB $tempTweets
+sed -i "s/\([0-9A-Za-z,.]\)\"/\1»/g;s/\"\([0-9A-Za-z,.]\)/«\1/g" $tempTweets
+sed -i -e"s/“/«/g" -e "s/”/»/g" -e "s/'//g" $tempTweets
 
 while read TWEET; do 
     ../../../Tools/tweet.sh/tweet.sh post ${TWEET}
-    echo post ${TWEET}
 done < $tempTweets
 
 
-while read cleanup; do
-   sed -i -e "/${cleanup}/d" .seenids
-done < ${seenIds}
+#while read cleanup; do
+#   sed -i -e "/${cleanup}/d" .seenids
+#done < ${seenIds}
 
 popd
