@@ -16,7 +16,7 @@ idToHandle(){
 pushd $SCRIPTDIR 
 STATUS="0"
 while [ "$STATUS" == "0" ]; do
-    HANDLE=$(./IdToHandle.sh $(( $RANDOM * ( $RANDOM % $(date +%Y) ) + $(date +"%d + %m") )))
+    HANDLE=$(IdToHandle $(( $RANDOM * ( $RANDOM % $(date +%Y) ) + $(date +"%d + %m") )))
     [ ! "${HANDLE}" == "" ] && STATUS="1"
 done
 t block "$HANDLE"
