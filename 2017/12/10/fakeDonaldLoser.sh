@@ -39,7 +39,7 @@ words=$(mktemp)
 while read WORD; do
     LINE=$(grep "^${WORD}" antonyms.txt)
     IFS=" " read -a info <<< "${LINE}"
-    [[ "$LINE" != "" ]] && echo "s/${info[0]}/${info[1]}/Ig" >> $patternDB
+    [[ "$LINE" != "" ]] && echo "s/ ${info[0]} / ${info[1]} /Ig" >> $patternDB
 done < <( cat $tempTweets | sed -e "s/ /\n/g" | sed -e "s/[^A-Za-z -]//g" |\
                 tr '[:upper:]' '[:lower:]')
 
