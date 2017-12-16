@@ -7,7 +7,6 @@ IFS=$'\n\t'
 SCRIPTDIR=$(dirname $0)
 LATESTIDS=$(mktemp)
 
-# First grab all the tweets from the latest search of "can we use your video for credit"
 lynx -dump -listonly 'https://twitter.com/search?f=tweets&vertical=default&q=%22I%20forgot%22&src=typd' | grep "/status/" | cut -d"/" -f6 > $LATESTIDS
 
 forget(){
