@@ -9,7 +9,7 @@ SECONDSSINCEMIDNIGHT=$(( $( TZ=":Etc/GMT-1" date "+(10#%H * 60 + 10#%M) * 60 + 1
 BEATS=$(echo "scale=5;($SECONDSSINCEMIDNIGHT / 86400)*1000" | bc | cut -d. -f1)
 DAYOFWEEK=$(date +%w)
 SCRIPTDIR=$(dirname $0)
-VALUE=$( bc -l <<< "scale=0;($BEATS + ( $DAYOFWEEK * 1000)) / 63 " )
+VALUE=$( bc -l <<< "scale=0;($BEATS + ( $DAYOFWEEK * 1000)) / 111 " )
 
 pushd $SCRIPTDIR 
     QUOTE=$(sed -n ${VALUE}p Quotes.list)
