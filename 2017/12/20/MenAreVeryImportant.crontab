@@ -1,6 +1,7 @@
 # International days of men BotADayBotAway - Orange 2017 CC-0
 # First set are special, the rest I just used macros to covert 
 # https://twitter.com/NotFaulty/status/310542475968253952
+# Dates were taken from https://en.wikipedia.org/wiki/International_observance
 00 17 1-7 10 5, /usr/local/bin/t update "Why Isn't There A MEN'S World Smile Day"
 00 17 1-7 8 5, /usr/local/bin/t update "Why Isn't There A MEN'S International Beer Day"
 00 17 1-7 10 1, /usr/local/bin/t update "Why Isn't There A MEN'S World Habitat Day"
