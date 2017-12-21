@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set -uo pipefail
 IFS=$'\n\t'
 # Recursively vist a users soundcloud likes and post one (then repeat for that user)
 # https://twitter.com/MysteriousDrD/status/940968557923495936
