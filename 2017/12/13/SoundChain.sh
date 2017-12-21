@@ -24,7 +24,7 @@ lynx -dump -listonly https://soundcloud.com/$LASTUSER/likes | cut -d. -f2- | gre
 # For every line, get that user's likes and give it a value, this prevents dead ends 
 while read LINE; do
 	USER=$(cut -d/ -f1 <<< "$LINE" )
-	VALUE=$(lynx -dump -listonly https://soundcloud.com/$USER/likes | cut -d. -f2- | grep "://soundcloud" | sed -e "s/^ //g;/oembed/d;/.xml/d;/\/$/d;/popular\/searches/d" | cut -d/ -f4- | grep "/" | sed -e "@^${USER}/@d" | wc -l )
+	VALUE=$(lynx -dump -listonly https://soundcloud.com/$USER/likes | cut -d. -f2- | grep "://soundcloud" | sed -e "s/^ //g;/oembed/d;/.xml/d;/\/$/d;/popular\/searches/d" | cut -d/ -f4- | grep "/" | sed -e "/^${USER}\//d" | wc -l )
 	echo $LINE $VALUE >> $values
 done < $listOfLinks
 
@@ -44,5 +44,5 @@ FINALURL="https://soundcloud.com/$(shuf $values | head -1 | cut -d" " -f1)"
 echo $(cut -d/ -f4 <<< "$FINALURL") > .lastuser
 
 # And post
-echo "$LASTUSER liked $FINALURL #SoundChain"
+../../../Tools/tweet.sh/tweet.sh tweet "$LASTUSER liked $FINALURL #SoundChain"
 popd
