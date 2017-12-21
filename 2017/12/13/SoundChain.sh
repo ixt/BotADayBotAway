@@ -12,24 +12,30 @@ pushd $SCRIPTDIR
 # Load in the last user 
 if [ -e ".lastuser" ]; then
 	LASTUSER=$(sed -n 1p .lastuser)
+    echo "Last User set to $LASTUSER"
 fi
 
 # Add to list of seen users to prevent loops 
 echo "$LASTUSER" >> .seenusers
+echo "Added $LASTUSER to seen users"
 
 # Get a list of recent likes 
 lynx -dump -listonly https://soundcloud.com/$LASTUSER/likes | cut -d. -f2- | grep "://soundcloud" | sed -e "s/^ //g;/oembed/d;/.xml/d;/\/$/d;/popular\/searches/d" | cut -d/ -f4- | grep "/" | sort > $listOfLinks
 
+echo "List of likes:"
+cat $listOfLinks
 
+echo "Users and likes:"
 # For every line, get that user's likes and give it a value, this prevents dead ends 
 while read LINE; do
 	USER=$(cut -d/ -f1 <<< "$LINE" )
-	VALUE=$(lynx -dump -listonly https://soundcloud.com/$USER/likes | cut -d. -f2- | grep "://soundcloud" | sed -e "s/^ //g;/oembed/d;/.xml/d;/\/$/d;/popular\/searches/d" | cut -d/ -f4- | grep "/" | sed -e "/^${USER}\//d" | wc -l )
-	echo $LINE $VALUE >> $values
+	VALUE=$(lynx -dump -listonly https://soundcloud.com/$USER/likes | cut -d. -f2- | grep "://soundcloud" | sed -e "s/^ //g;/oembed/d;/.xml/d;/\/$/d;/popular\/searches/d" | cut -d/ -f4- | grep "/" | sed -e "/^${USER}\//d" | wc -l)
+	echo $LINE ${VALUE:0} >> $values
+	echo $USER":" ${VALUE:0}
 done < $listOfLinks
 
 # Delete seen users from the list and those without any likes
-sed -i -e "/ [0-1]$/d" $values
+sed -i -e "/ 0$/d;/ 1$/d" $values
 while read user; do
 	sed -i -e "/${user}/d" $values
 done < .seenusers
