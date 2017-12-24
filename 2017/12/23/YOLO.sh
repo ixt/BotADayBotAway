@@ -57,6 +57,6 @@ echo $COUNT
 : $(( COUNT += 1 ))
 
 done
-#t update "$CURRENTTIME #YOLOBot12 $IMGPAGE" -f "images/$CURRENTTIME.png" 
+t update "$CURRENTTIME #YOLOBot12 $IMGPAGE" -f "images/$CURRENTTIME.png" 
 
 popd
