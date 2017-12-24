@@ -31,7 +31,7 @@ getRandomImage(){
 pushd $SCRIPTDIR 
 ACTUALDIR=$( pwd )
 while [ "$MAKINGWORK" == "1" ]; do
-    LOOKINGFORAWORD="0"
+    LOOKINGFORWORD="0"
     while [ "$LOOKINGFORWORD" -lt "1" ]; do
         echo "Choosing word"
         WORD=$(tail --lines="+800" $CORPUS | shuf | head -1)
@@ -45,7 +45,7 @@ while [ "$MAKINGWORK" == "1" ]; do
     pushd $DARKNET
     ./darknet detect cfg/yolo.cfg yolo.weights $ACTUALDIR/images/$CURRENTTIME.png
     mv predictions.png $ACTUALDIR/images/$CURRENTTIME.png
-    LOOKINGFORAWORD="0"
+    LOOKINGFORWORD="0"
     if ! grep "^0" <(du prediction_details.txt); then
         MAKINGWORK="0"
     fi
