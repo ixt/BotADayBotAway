@@ -19,12 +19,13 @@ getRandomImage(){
     IMGPAGE=$(lynx -dump -listonly "https://snappygoat.com/s/?q=$1" | grep -o "https://snappygoat.com/free.*" | shuf | head -1)
     echo "image page is $IMGPAGE"
     IMGURL=$(lynx -dump -listonly "$IMGPAGE" | grep -o "[^ ]*\.[pj][np]g$" | head -1)
+    IMGEXT=$( rev <<< "$IMGURL" | cut -d. -f1 | rev)
     if [ "$IMGURL" == "" ]; then 
         echo "no image yet"
     else
         echo "image url is $IMGURL"
+        wget $IMGURL -O current.$IMGEXT
         LOOKINGFORWORD="1"
-        wget $IMGURL
     fi
 }
 pushd $SCRIPTDIR 
@@ -39,27 +40,23 @@ while [ "$MAKINGWORK" == "1" ]; do
     done
     echo "scaling image"
     [ -e "images/$CURRENTTIME.png" ] && rm images/$CURRENTTIME.png
-    convert *.*g -resize 800x images/$CURRENTTIME.png
+    convert "current.$IMGEXT" -resize 800x "images/$CURRENTTIME.png"
     
     pushd $DARKNET
     ./darknet detect cfg/yolo.cfg yolo.weights $ACTUALDIR/images/$CURRENTTIME.png
     mv predictions.png $ACTUALDIR/images/$CURRENTTIME.png
-    if [ "$?" != "0" ]; then
-        LOOKINGFORAWORD="0"
-    fi
+    LOOKINGFORAWORD="0"
     if ! grep "^0" <(du prediction_details.txt); then
         MAKINGWORK="0"
-    else
-        LOOKINGFORAWORD="0"
     fi
     popd 
-    rm *.*g
+    [ -e "current.$IMGEXT" ] && rm current.$IMGEXT
 #FAILCLOSED
 echo $COUNT
 [ "$COUNT" -gt "3" ] && exit
 : $(( COUNT += 1 ))
 
 done
-t update "$CURRENTTIME #YOLOBot12 $IMGPAGE" -f "images/$CURRENTTIME.png" 
+#t update "$CURRENTTIME #YOLOBot12 $IMGPAGE" -f "images/$CURRENTTIME.png" 
 
 popd
