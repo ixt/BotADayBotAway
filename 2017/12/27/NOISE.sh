@@ -3,6 +3,12 @@ set -euo pipefail
 IFS=$'\n\t'
 # Nothing interesting just noise, currently broken as the full array is not
 # tweeted
+# "_" "▖" "▗" "▄" "▘" "▌" "▚" "▙" "▝" "▞" "▐" "▟" "▀" "▛" "▜" "█" )
+# ▛▀▀▌▘▙▘▛▀▀▌
+# ▌█▌▌█▝ ▌█▌▌
+# ▌▀▘▌▚▟▘▌▀▘▌
+# ▀▀▀▘▘▘▌▀▀▀▘
+# ▀▛▗▚▀▜▛▄█▙▌
 CHARS=( "_" "▖" "▗" "▄" "▘" "▌" "▚" "▙" "▝" "▞" "▐" "▟" "▀" "▛" "▜" "█" )
 SCRIPTDIR=$(dirname $0)
 pushd $SCRIPTDIR 
