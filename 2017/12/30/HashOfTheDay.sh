@@ -16,6 +16,7 @@ sleep 5s
 twurl -d "status=The SHA256 Hash of the day: 
 $SHA256
 " /1.1/statuses/update.json
-sleep 256s
+sleep 25s
 twurl -d "status=The SHA384 Hash of the day: 
+$SHA384
 " /1.1/statuses/update.json

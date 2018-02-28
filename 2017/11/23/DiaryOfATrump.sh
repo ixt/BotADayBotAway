@@ -161,6 +161,6 @@ done < $wordList
 sed -i -e "s/\\uFE0F//g" $CODEPOINTS
 process_photo ${lineCount}
 
-t update " " -f output.png
+#t update " " -f output.png
 #display output.png
 popd
