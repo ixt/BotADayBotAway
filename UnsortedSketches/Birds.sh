@@ -17,7 +17,7 @@ grep "inaturalist" $TEMP | grep "src" | cut -d'"' -f2 | head -1 | xargs wget -O 
 convert $TEMPIMAGE1 -scale 200% $TEMPIMAGE
 ffmpeg -loop 1 -i $TEMPIMAGE -i $TEMPAUDIO -c:v libx264 -tune stillimage -c:a aac -b:a 192k -pix_fmt yuv420p -t 00:00:30 -shortest $TEMPVID
 
-t update -f $TEMPVID "$TITLE - 
+t update -P ~/.trc-bird -f $TEMPVID "$TITLE - 
 Image: 
 $IMAGEATRIBUTION 
 Audio: 
