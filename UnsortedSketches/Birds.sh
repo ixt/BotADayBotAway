@@ -7,6 +7,7 @@ TEMPIMAGE1="image1.jpg"
 TEMP=$(mktemp)
 lynx -listonly -dump http://www.xeno-canto.org/explore/random | grep download | head -1 | cut -d/ -f3-4  | xargs -I% lynx -dump -nonumbers  % | grep -E -A 2 'javascript|Citation$' | sed -n "3p;7p" > $TEMP
 TITLE=$(head -1 $TEMP | sed "s/.*·//g")
+echo $TITLE
 AUDIOATRIBUTION=$(tail -1 $TEMP)
 URL=$(head -1 $TEMP | sed "s/·.*//g" | sed "s/XC//g;s/ //g" )
 wget -qO $TEMPAUDIO "https://www.xeno-canto.org/$URL/download"
