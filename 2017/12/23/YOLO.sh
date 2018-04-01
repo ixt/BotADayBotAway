@@ -5,8 +5,8 @@
 # predicitions to a text file. 
 # Can be found here: https://github.com/ixt/darknet
 set -uo pipefail
-DARKNET="/home/orange/Pkgs/darknet"
-CORPUS="/home/orange/Pkgs/google-10000-english/20k.txt"
+DARKNET="/home/psifork/Pkgs/darknet"
+CORPUS="/home/psifork/Pkgs/google-10000-english/20k.txt"
 IFS=$'\n\t'
 LOOKINGFORWORD="0"
 MAKINGWORK="1"
@@ -43,7 +43,7 @@ while [ "$MAKINGWORK" == "1" ]; do
     convert "current.$IMGEXT" -resize 800x "images/$CURRENTTIME.png"
     
     pushd $DARKNET
-    ./darknet detect cfg/yolo.cfg yolo.weights $ACTUALDIR/images/$CURRENTTIME.png
+    ./darknet detector test cfg/combine9k.data cfg/yolo9000.cfg yolo9000.weights $ACTUALDIR/images/$CURRENTTIME.png
     mv predictions.png $ACTUALDIR/images/$CURRENTTIME.png
     LOOKINGFORWORD="0"
     if ! grep "^0" <(du prediction_details.txt); then
