@@ -4,8 +4,10 @@
 
 # Take the list of followers grab each of their latest tweets and then randomly pick on to process
 
-echo "This is just going to be psudeocode for now so exit if its exectuted"
-exit 0
+# echo "This is just going to be psudeocode for now so exit if its exectuted"
+# exit 0
+
+currentTime=$(date +%Y%m%d%H)
 
 # TODO: 
 # [ ] - Make a manual mode for TheBestest.sh
@@ -14,25 +16,27 @@ exit 0
 # If the tweet database exists don't bother grabbing again
 # The DBs should be named for the current hour. 
 
-if tweetDB.currentTime does not exist then
+if [[ "tweetDB.$currentTime" -ne ]]; then
     rm tweetDB* # Remove old tweets
-
-    load_followers
-    for follower in followers; do
-        get_last_tweet >> tweetDB.currentTime
-    done
+    python ./track_followers.py
+    while read follower; do
+        t timeline -n1 -c $follower | cut -d, -f1 | sed -n "2p" >> tweetDB.$currentTime
+    done < followers.txt
 fi
 
 # sort the database by the latest tweets at the top, grab the latest 100 then
 # randomly pick from them
 
-TWEET_ID=$( sort tweetDB.currentTime by postedTime \
+TWEET_ID=$( sort -n tweetDB.$currentTime \
 	| head -100 \
 	| shuf \
 	| head -1 )
 
-tweetText \
-	| RAKE \
-	| xargs -I@ TheBestest.sh "@" E > newStatus
+KEY_WORD=$(../../../Tools/RAKE.sh/RAKE.sh \
+    <(../../../Tools/tweet.sh/tweet.sh fetch $TWEET_ID \
+                                | jq -r .full_text) \
+                                | head -1 \
+                                | cut -d, -f2-)
 
-tweet in_reply_to $TWEET_ID "$(cat newStatus)"
+
+# tweet in_reply_to $TWEET_ID "$(cat newStatus)"

@@ -37,21 +37,22 @@ getRandomImage() {
 }
 
 while [ "$LOOKINGFORWORD" -lt "1" ]; do
-	echo "Choosing word"
+	[[ "${2:-not e}" != "E" ]] && echo "Choosing word"
     [ "$WORD" == "" ] && WORD=$(tail --lines="+2000" $CORPUS | shuf | tail -1)
-	echo "word is $WORD"
-	getRandomImage $WORD
-	echo "image gotten"
+	[[ "${2:-not e}" != "E" ]] && echo "word is $WORD"
+	[[ "${2:-not e}" != "E" ]] && getRandomImage $WORD
+	[[ "${2:-not e}" == "E" ]] && getRandomImage $WORD 2>/dev/null >/dev/null
+	[[ "${2:-not e}" != "E" ]] && echo "image gotten"
 done
 
 WORD=$(echo "$WORD" \
 	| tr '[:lower:]' '[:upper:]')
 
-echo "Resizing source"
+[[ "${2:-not e}" != "E" ]] && echo "Resizing source"
 convert current.* -resize 26!x20! -monochrome $TEMP
 
 # Fill up the matrix with all the pixels
-echo "Loading Matrix with pixels"
+[[ "${2:-not e}" != "E" ]] && echo "Loading Matrix with pixels"
 for y in $(seq 0 19); do
 	for x in $(seq 0 25); do
 		values=$(convert ${TEMP}[1x1+${x}+${y}] \
@@ -130,6 +131,9 @@ for dy in $(seq 0 9); do
 	done
 done
 
+rm current.*
+popd
+
 # Echo and then tweet
 echo "${LINE[0]}
 ${LINE[1]}
@@ -139,7 +143,9 @@ ${LINE[4]}
 ${LINE[6]}
 ${LINE[7]}
 ${LINE[8]}
-${LINE[9]}" | tee >(wc)
+${LINE[9]}
+\"$WORD\" - Orange ($(date +%Y))"
+[[ "${2:-not e}" == "E" ]] && exit 0
 twurl -d "tweet_mode=extended&status=${LINE[0]}
 ${LINE[1]}
 ${LINE[2]}
@@ -150,5 +156,3 @@ ${LINE[7]}
 ${LINE[8]}
 ${LINE[9]}
 \"$WORD\" - Orange ($(date +%Y))" /1.1/statuses/update.json
-rm current.*
-popd
