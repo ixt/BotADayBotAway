@@ -11,7 +11,7 @@ LOOKINGFORWORD="0"
 # Declare an array for storing the array of pixels
 declare -A matrix
 
-pushd $SCRIPTDIR
+pushd $SCRIPTDIR >/dev/null
 LINE=("" "" "" "" "" "" "" "" "" "" "" "" "")
 
 getRandomImage() {
@@ -49,12 +49,12 @@ WORD=$(echo "$WORD" \
 	| tr '[:lower:]' '[:upper:]')
 
 [[ "${2:-not e}" != "E" ]] && echo "Resizing source"
-convert current.* -resize 26!x20! -monochrome $TEMP
+convert current.* -resize 24!x20! -monochrome $TEMP
 
 # Fill up the matrix with all the pixels
 [[ "${2:-not e}" != "E" ]] && echo "Loading Matrix with pixels"
 for y in $(seq 0 19); do
-	for x in $(seq 0 25); do
+	for x in $(seq 0 23); do
 		values=$(convert ${TEMP}[1x1+${x}+${y}] \
 			-format "%[fx:int(255*r)],%[fx:int(255*g)],%[fx:int(255*b)]" \
 			info:)
@@ -69,7 +69,7 @@ done
 
 # Choose the correct characters for a given 4 pixel block
 for dy in $(seq 0 9); do
-	for dx in $(seq 0 12); do
+	for dx in $(seq 0 11); do
 		x=$(($dx * 2))
 		y=$(($dy * 2))
 		x1=$(($x + 1))
@@ -131,8 +131,9 @@ for dy in $(seq 0 9); do
 	done
 done
 
-rm current.*
-popd
+rm current.* >/dev/null
+popd >/dev/null
+
 
 # Echo and then tweet
 echo "${LINE[0]}

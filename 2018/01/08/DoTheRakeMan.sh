@@ -8,6 +8,7 @@
 # exit 0
 
 currentTime=$(date +%Y%m%d%H)
+TEMP=$(mktemp)
 
 # TODO: 
 # [ ] - Make a manual mode for TheBestest.sh
@@ -16,12 +17,14 @@ currentTime=$(date +%Y%m%d%H)
 # If the tweet database exists don't bother grabbing again
 # The DBs should be named for the current hour. 
 
-if [[ "tweetDB.$currentTime" -ne ]]; then
+if [ ! -e "./tweetDB.$currentTime" ]; then
     rm tweetDB* # Remove old tweets
     python ./track_followers.py
+    # This method is slow and hits rate limits really quickly 
     while read follower; do
-        t timeline -n1 -c $follower | cut -d, -f1 | sed -n "2p" >> tweetDB.$currentTime
-    done < followers.txt
+        t timeline -n1 -i -c $follower | cut -d, -f1 | sed -n "2p" >> tweetDB.$currentTime
+        echo $follower
+    done < <(cat followers.txt | sed -e "s/[[:space:]].*$//g" )
 fi
 
 # sort the database by the latest tweets at the top, grab the latest 100 then
@@ -32,11 +35,18 @@ TWEET_ID=$( sort -n tweetDB.$currentTime \
 	| shuf \
 	| head -1 )
 
+echo $TWEET_ID
+
 KEY_WORD=$(../../../Tools/RAKE.sh/RAKE.sh \
     <(../../../Tools/tweet.sh/tweet.sh fetch $TWEET_ID \
                                 | jq -r .full_text) \
                                 | head -1 \
                                 | cut -d, -f2-)
+echo $KEY_WORD
+
+../../../2018/04/02/TheBestest.sh "$KEY_WORD" E | sed -e "s/^$//g;s/[[:space:]]$//g" | tee $TEMP
+wc $TEMP
+twurl -d "tweet_mode=extended&status=$(cat $TEMP)" /1.1/statuses/update.json
 
 
 # tweet in_reply_to $TWEET_ID "$(cat newStatus)"
