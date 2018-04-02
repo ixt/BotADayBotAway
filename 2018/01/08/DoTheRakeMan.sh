@@ -18,15 +18,21 @@ RUNNING=1
 # If the tweet database exists don't bother grabbing again
 # The DBs should be named for the current hour. 
 
+grab_and_add(){
+    t timeline -n1 -i -c $1 | cut -d, -f1 | sed -n "2p" >> tweetDB.$currentTime
+    echo done $1
+}
+
 while [ "$RUNNING" == 1 ]; do
 	if [ ! -e "./tweetDB.$currentTime" ]; then
 	    rm tweetDB* # Remove old tweets
 	    python ./track_followers.py
 	    # This method is slow and hits rate limits really quickly 
 	    while read follower; do
-	        t timeline -n1 -i -c $follower | cut -d, -f1 | sed -n "2p" >> tweetDB.$currentTime
-	        echo $follower
+	        grab_and_add $follower &
+            sleep 0.2s >/dev/null
 	    done < <(cat followers.txt | shuf | head -100 | sed -e "s/[[:space:]].*$//g" )
+        wait
 	fi
 	
 	# sort the database by the latest tweets at the top, grab the latest 100 then
@@ -35,7 +41,7 @@ while [ "$RUNNING" == 1 ]; do
 	KEY_WORD=""
 	while [ "$KEY_WORD" == "" ]; do
 	TWEET_ID=$( sort -r -n tweetDB.$currentTime \
-		| head -100 \
+		| head \
 		| shuf \
 		| head -1 )
 	
