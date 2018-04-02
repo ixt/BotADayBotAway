@@ -1,19 +1,10 @@
 #!/bin/bash
 # In this script I will reference a script from the future!
 # (not really im just writing this one to try catch up)
-
 # Take the list of followers grab each of their latest tweets and then randomly pick on to process
-
-# echo "This is just going to be psudeocode for now so exit if its exectuted"
-# exit 0
-
 currentTime=$(date +%Y%m%d%H)
 TEMP=$(mktemp)
 RUNNING=1
-
-# TODO: 
-# [ ] - Make a manual mode for TheBestest.sh
-# [ ] - Decide on how to tweet
 
 # If the tweet database exists don't bother grabbing again
 # The DBs should be named for the current hour. 
