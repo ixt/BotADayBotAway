@@ -6,7 +6,7 @@ CHARS=(" " "▖" "▗" "▄" "▘" "▌" "▚" "▙" "▝" "▞" "▐" "▟" "
 SCRIPTDIR=$(dirname $0)
 TEMP=$(mktemp)
 CORPUS="/home/psifork/Pkgs/google-10000-english/20k.txt"
-WORD=""
+WORD="${1:-}"
 LOOKINGFORWORD="0"
 # Declare an array for storing the array of pixels
 declare -A matrix
@@ -38,7 +38,7 @@ getRandomImage() {
 
 while [ "$LOOKINGFORWORD" -lt "1" ]; do
 	echo "Choosing word"
-	WORD=$(tail --lines="+2000" $CORPUS | shuf | tail -1)
+    [ "$WORD" == "" ] && WORD=$(tail --lines="+2000" $CORPUS | shuf | tail -1)
 	echo "word is $WORD"
 	getRandomImage $WORD
 	echo "image gotten"
