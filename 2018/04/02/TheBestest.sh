@@ -2,7 +2,7 @@
 # Same as NOISE.sh but with an image instead of random data
 set -euo pipefail
 IFS=$'\n\t'
-CHARS=(" " "▖" "▗" "▄" "▘" "▌" "▚" "▙" "▝" "▞" "▐" "▟" "▀" "▛" "▜" "█")
+CHARS=("▔" "▖" "▗" "▄" "▘" "▌" "▚" "▙" "▝" "▞" "▐" "▟" "▀" "▛" "▜" "▉")
 SCRIPTDIR=$(dirname $0)
 TEMP=$(mktemp)
 CORPUS="/home/psifork/Pkgs/google-10000-english/20k.txt"
@@ -49,7 +49,7 @@ WORD=$(echo "$WORD" \
 	| tr '[:lower:]' '[:upper:]')
 
 [[ "${2:-not e}" != "E" ]] && echo "Resizing source"
-convert current.* -resize 24!x20! -monochrome $TEMP
+convert current.$IMGEXT -resize 24!x20! -monochrome $TEMP
 
 # Fill up the matrix with all the pixels
 [[ "${2:-not e}" != "E" ]] && echo "Loading Matrix with pixels"
@@ -146,7 +146,7 @@ ${LINE[7]}
 ${LINE[8]}
 ${LINE[9]}
 \"$WORD\" - Orange ($(date +%Y))"
-[[ "${2:-not e}" == "E" ]] && exit 0
+if [[ ! "${2:-not e}" == "E" ]]; then
 twurl -d "tweet_mode=extended&status=${LINE[0]}
 ${LINE[1]}
 ${LINE[2]}
@@ -157,3 +157,4 @@ ${LINE[7]}
 ${LINE[8]}
 ${LINE[9]}
 \"$WORD\" - Orange ($(date +%Y))" /1.1/statuses/update.json
+fi
