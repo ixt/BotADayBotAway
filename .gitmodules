@@ -10,3 +10,6 @@
 [submodule "Tools/markov-bash"]
 	path = Tools/markov-bash
 	url = https://github.com/ixt/markov-bash
+[submodule "Tools/word2vec"]
+	path = Tools/word2vec
+	url = https://github.com/dav/word2vec.git
