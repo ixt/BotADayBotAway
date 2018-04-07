@@ -9,5 +9,6 @@ pushd $SCRIPTDIR
 IFS=, read -a values <<< "$LINE"
 # tweet one 
 TWEETID=$(t update "Daily Dose of Mr Rogers: ${values[1]}" 2>&1 | grep -o "status [0-9]*" | grep -o "[0-9]*")
+echo $TWEETID
 t reply $TWEETID "More info about this episode here: ${values[0]}"
 popd
