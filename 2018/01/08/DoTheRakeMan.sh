@@ -46,7 +46,8 @@ while [ "$RUNNING" == 1 ]; do
 	    <(../../../Tools/tweet.sh/tweet.sh fetch $TWEET_ID \
 	                                | jq -r .full_text \
                                     | sed -e "s/@[a-zA-Z0-9_-]* //g" \
-                                    | sed -e "s/http[:\/a-zA-Z0-9.]*//g") \
+                                    | sed -e "s/RT[ ]+//g" \
+                                    | sed -e "s/http[s/a-zA-Z0-9.]*//g") \
 	        | head -1 \
 	        | cut -d, -f2- )
 	done
