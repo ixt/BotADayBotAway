@@ -3,50 +3,48 @@
 # take a screen shot of the current 24h bitcoin chart, if up 300 usd then post
 # saying the market is being manipulated, if it drops say the bubble is popping
 
-# TODO:
-# [ ]: Screenshot a relevant chart
-# [ ]: Decide on a bot name 
-# [ ]: Decide on a frequency, 1 day? 12 hours? 6 hours? 3 hours?
-
-echo "Currently do nothing, work in progress" 
-exit 0
-
 checkPrice(){
-    CURRENTPRICE=$(curl "https://blockchain.info/tobtc?currency=USD&value=1" | xargs -I@ echo " 1 / @ " | bc -l )
+    CURRENTPRICE=$(curl "https://blockchain.info/tobtc?currency=USD&value=1" | xargs -I@ echo "scale=0; 1 / @ " | bc -l )
 }
 
-width="300"
-height="1000"
+width="500"
+height="500"
 SCRIPTDIR=$(dirname $0)
 SCREENSHOT=$(mktemp --suffix=.png)
 TEMP=$(mktemp)
-twelveHoursAgo=$(date --date="- 12 hours" +%s)
 
 screenshot(){
     # We repeat this 4 times just to make it takes it 
     fileSize="0"
     echo "[INFO]: Screenshot"
-    while [ "${fileSize}" -lt "20000" ]; do
         if [ -e "/usr/bin/chromium" ]; then
-        chromium --headless --disable-gpu $1 --hide-scrollbars --virtual-time-budget=20170120 --window-size=${width},${height} --force-device-scale-factor=2 --hide-scroll-bars --screenshot=${SCREENSHOT}
+        chromium --headless --disable-gpu $1 --hide-scrollbars --virtual-time-budget=120000 --window-size=${width},${height} --force-device-scale-factor=2 --hide-scroll-bars --screenshot=${SCREENSHOT}
         else
-        chromium-browser --headless --disable-gpu $1 --hide-scrollbars --virtual-time-budget=20170120 --window-size=${width},${height} --force-device-scale-factor=2 --hide-scroll-bars --screenshot=${SCREENSHOT}
+        chromium-browser --headless --disable-gpu $1 --hide-scrollbars --virtual-time-budget=120000 --window-size=${width},${height} --force-device-scale-factor=2 --hide-scroll-bars --screenshot=${SCREENSHOT}
         fi
-        fileSize=$(ls -l ${SCREENSHOT} | cut -d" " -f5)
-    done
 }
 
 pushd $SCRIPTDIR 
 
 read LASTPRICE < lastPrice 
+checkPrice
 
-DIFFERENCE=$(bc -l <<< "$LASTPRICE - $CURRENTPRICE")
+DIFFERENCE=$(bc -l <<< "scale=0; $LASTPRICE - $CURRENTPRICE" | cut -d. -f1)
 
-if [[ $DIFFERENCE -gt 300 || $DIFFERENCE -lt -300 ]]; then
-    screenshot
+echo "Diff $DIFFERENCE"
+echo "L: $LASTPRICE"
+echo "C: $CURRENTPRICE"
+if [[ "$DIFFERENCE" -gt "300" || "$DIFFERENCE" -lt "-300" ]]; then
+    screenshot "https://s.tradingview.com/widgetembed/?frameElementId=tradingview_07087&symbol=BITFINEX%3ABTCUSD&interval=1&hidesidetoolbar=0&symboledit=1&saveimage=1&toolbarbg=rgba(255,%20255,%20255,%201)&studies=MACD%40tv-basicstudies&theme=White&style=1&timezone=Etc%2FUTC&studies_overrides=%7B%7D&overrides=%7B%7D&enabled_features=%5B%5D&disabled_features=%5B%5D&locale=en&utm_source=bfxdata.com&utm_medium=widget&utm_campaign=chart&utm_term=BITFINEX%3ABTCUSD"
 
-    #t update " " -f output.png
-    display output.png
+    cp $SCREENSHOT output.png
+    if [[ "$DIFFERENCE" -gt "300" ]]; then
+        echo "Change of +300"
+        t update "More manipulation of the markets I see!" -f output.png -P ~/.trc.botfinexed
+    else
+        echo "Change of -300"
+        t update "Looks like the bubble is finally bursting!" -f output.png -P ~/.trc.botfinexed
+    fi
 fi
 
 echo "$CURRENTPRICE" > lastPrice
