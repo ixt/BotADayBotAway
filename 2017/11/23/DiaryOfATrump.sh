@@ -7,7 +7,7 @@
 # Again using t to fix some missing features of tweet.sh
 
 USER="realdonaldtrump"
-tweetRoot="https://mobile.twitter.com/${USER}/status/"
+tweetRoot="http://mobile.twitter.com/${USER}/status/"
 width="300"
 height="1000"
 SCRIPTDIR=$(dirname $0)
@@ -25,7 +25,7 @@ screenshot(){
         if [ -e "/usr/bin/chromium" ]; then
         chromium --headless --disable-gpu $tweetLink --hide-scrollbars --virtual-time-budget=20170120 --window-size=${width},${height} --force-device-scale-factor=2 --hide-scroll-bars --screenshot=${SCREENSHOT}
         else
-        chromium-browser --headless --disable-gpu $tweetLink --hide-scrollbars --virtual-time-budget=20170120 --window-size=${width},${height} --force-device-scale-factor=2 --hide-scroll-bars --screenshot=${SCREENSHOT}
+        chromium-browser --headless $tweetLink --hide-scrollbars --virtual-time-budget=20170120 --window-size=${width},${height} --force-device-scale-factor=2 --hide-scroll-bars --screenshot=${SCREENSHOT}
         fi
         fileSize=$(ls -l ${SCREENSHOT} | cut -d" " -f5)
     done
@@ -36,7 +36,7 @@ process_photo(){
     # tweet size taking the lines of a monospaced wrap that is passed to this
     # function. Then we take an upper and lower bound from that esitmate, look
     # up the color of all the pixels in that range to find where to crop
-    pixelsHighEstimate=$(( 520 + ( $1 * 50 ) ))
+    pixelsHighEstimate=$(( 520 + ( $1 * 150 ) ))
     low=$(bc -l <<< "$pixelsHighEstimate - 75" )
     high=$(bc -l <<< "$pixelsHighEstimate + 75" )
     echo "[INFO]: $pixelsHighEstimate is the high estimate"
@@ -130,7 +130,7 @@ screenshot
 
 CODEPOINTS=$(mktemp)
 wordList=$(mktemp)
-lineCount=$(jq .full_text $TEMP | sed -e "s/^\"//g;s/\"$//g" | fold -w 34 -s | wc -l )
+lineCount=$(jq .full_text $TEMP | sed -e "s/^\"//g;s/\"$//g" | fold -w 29 -s | wc -l )
 
 # We need to fix a few things
 jq .full_text $TEMP | sed \
@@ -161,6 +161,6 @@ done < $wordList
 sed -i -e "s/\\uFE0F//g" $CODEPOINTS
 process_photo ${lineCount}
 
-#t update " " -f output.png
+t update " " -f output.png
 #display output.png
 popd
