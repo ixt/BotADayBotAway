@@ -2,12 +2,14 @@
 # Same as NOISE.sh but with an image instead of random data
 set -uo pipefail
 IFS=$'\n\t'
-SCRIPTDIR="/home/psifork/Projects/botadaybotaway/2018/01/10/"
+SCRIPTDIR="/home/orange/Projects/BotADay/2018/01/10/"
 TEMP=$(mktemp)
-CORPUS="/home/psifork/Pkgs/google-10000-english/20k.txt"
-DARKNET="/home/psifork/Pkgs/darknet"
+CORPUS="/home/orange/Pkgs/google-10000-english/20k.txt"
+DARKNET="/home/orange/Pkgs/darknet-ixt"
 WORD="${1:-}"
 LOOKINGFORWORD="0"
+NUM="0"
+WORDLIST="word.list"
 pushd $SCRIPTDIR >/dev/null
 
 getRandomImage() {
@@ -34,6 +36,11 @@ getRandomImage() {
 	fi
 }
 
+while read WORD; do 
+
+WORD=$(echo "$WORD" \
+	| tr '[:lower:]' '[:upper:]')
+
 while [ "$LOOKINGFORWORD" -lt "1" ]; do
 	[[ "${2:-not e}" != "E" ]] && echo "Choosing word"
 	[ "$WORD" == "" ] && WORD=$(tail --lines="+2000" $CORPUS | shuf | tail -1)
@@ -43,8 +50,6 @@ while [ "$LOOKINGFORWORD" -lt "1" ]; do
 	[[ "${2:-not e}" != "E" ]] && echo "image gotten"
 done
 
-WORD=$(echo "$WORD" \
-	| tr '[:lower:]' '[:upper:]')
 
 [[ "${2:-not e}" != "E" ]] && echo "Resizing source"
 #convert current.$IMGEXT -resize 24!x20! -monochrome $TEMP
@@ -61,30 +66,30 @@ echo $COLORS
 convert "current.$IMGEXT" -resize 800x "resized.current.png"
 
 pushd $DARKNET
-./darknet detect cfg/yolo.cfg yolo.weights $SCRIPTDIR/resized.current.png -thresh 0.1
+./darknet detect cfg/yolov3.cfg yolov3.weights $SCRIPTDIR/resized.current.png -thresh 0.1
 LOOKINGFORWORD="0"
-if ! grep "^0" <(du prediction_details.txt); then
+if ! grep "^0" <(du predictions.json); then
 	MAKINGWORK="0"
-	NUM="0"
+
 	while read PREDICTION; do
 		pushd $SCRIPTDIR
 		echo PREDICTION: $PREDICTION
 		IFS=, read -a VALUES <<<"$PREDICTION"
-		echo ${VALUES[*]}
 		convert resized.current.png \
-			-crop $((${VALUES[2]} - ${VALUES[1]}))x$((${VALUES[4]} - ${VALUES[3]}))+${VALUES[1]}+${VALUES[3]} \
+			-crop ${VALUES[2]}x${VALUES[3]}+${VALUES[0]}+${VALUES[1]} \
 			+repage uncut.current.png.$NUM
+        if [[ $? == 0 ]]; then  
 		cp uncut.current.png.$NUM current.png
 		python ./grabcut.py
 		while [ -e "uncut.current.png.$NUM" ]; do
 			: $((NUM += 1))
 		done
 		convert output.png -trim +repage -transparent black current.png.$NUM
+        fi
 		rm uncut*
 		popd
-	done < <(rev prediction_details.txt | cut -d, -f-5 | sed -e "s/[^0-9.,]//g" | rev | sort -n)
+    done < <(jq -r  ".[] | [.x1, .y1, (.width | floor) , ( .height | floor ), .label] | @csv " predictions.json | shuf | head -1)
 else
-	NUM="0"
 	MAKINGWORK="0"
 	pushd $SCRIPTDIR
 	cp resized.current.png current.png
@@ -97,10 +102,13 @@ else
 fi
 popd
 
-convert -size 1024x1024 current.png.* -transparent black -set page '+%[fx:80*cos((t/n)*2*pi)]+%[fx:80*sin((t/n)*2*pi)]' -layers merge -transparent white collage.png 
+done < <(cat $WORDLIST)
+
+convert -size 1024x1024 current.png.* -transparent black -set page '+%[fx:200*cos((t/n)*2*pi)]+%[fx:200*sin((t/n)*2*pi)]' -layers merge -transparent white collage.png 
 convert -size 1024x1024 gradient:$COLORS gradient.png
 composite -gravity center collage.png gradient.png aNewImage.png
 
-t update "$WORD" -f aNewImage.png
+#t update "$WORD" -f aNewImage.png
+display aNewImage.png
 rm *.png* current.$IMGEXT
 popd >/dev/null
