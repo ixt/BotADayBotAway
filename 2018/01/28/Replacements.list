@@ -1,0 +1,252 @@
+somaliland,hargeisa
+south georgia and south sandwich islands,king edward point
+french southern and antarctic lands,port-aux-français
+palestine,jerusalem
+aland islands,mariehamn
+nauru,yaren
+saint martin,marigot
+tokelau,atafu
+western sahara,el-aaiún
+afghanistan,kabul
+albania,tirana
+algeria,algiers
+american samoa,pago pago
+andorra,andorra la vella
+angola,luanda
+anguilla,the valley
+antigua and barbuda,saint john's
+argentina,buenos aires
+armenia,yerevan
+aruba,oranjestad
+australia,canberra
+austria,vienna
+azerbaijan,baku
+bahamas,nassau
+bahrain,manama
+bangladesh,dhaka
+barbados,bridgetown
+belarus,minsk
+belgium,brussels
+belize,belmopan
+benin,porto-novo
+bermuda,hamilton
+bhutan,thimphu
+bolivia,la paz
+bosnia and herzegovina,sarajevo
+botswana,gaborone
+brazil,brasilia
+british virgin islands,road town
+brunei darussalam,bandar seri begawan
+bulgaria,sofia
+burkina faso,ouagadougou
+myanmar,rangoon
+burundi,bujumbura
+cambodia,phnom penh
+cameroon,yaounde
+canada,ottawa
+cape verde,praia
+cayman islands,george town
+central african republic,bangui
+chad,n'djamena
+chile,santiago
+china,beijing
+christmas island,the settlement
+cocos islands,west island
+colombia,bogota
+comoros,moroni
+democratic republic of the congo,kinshasa
+republic of congo,brazzaville
+cook islands,avarua
+costa rica,san jose
+cote d'ivoire,yamoussoukro
+croatia,zagreb
+cuba,havana
+curaçao,willemstad
+cyprus,nicosia
+czech republic,prague
+denmark,copenhagen
+djibouti,djibouti
+dominica,roseau
+dominican republic,santo domingo
+ecuador,quito
+egypt,cairo
+el salvador,san salvador
+equatorial guinea,malabo
+eritrea,asmara
+estonia,tallinn
+ethiopia,addis ababa
+falkland islands,stanley
+faroe islands,torshavn
+fiji,suva
+finland,helsinki
+france,paris
+french polynesia,papeete
+gabon,libreville
+the gambia,banjul
+georgia,tbilisi
+germany,berlin
+ghana,accra
+gibraltar,gibraltar
+greece,athens
+greenland,nuuk
+grenada,saint george's
+guam,hagatna
+guatemala,guatemala city
+guernsey,saint peter port
+guinea,conakry
+guinea-bissau,bissau
+guyana,georgetown
+haiti,port-au-prince
+vatican city,vatican city
+honduras,tegucigalpa
+hungary,budapest
+iceland,reykjavik
+india,new delhi
+indonesia,jakarta
+iran,tehran
+iraq,baghdad
+ireland,dublin
+isle of man,douglas
+israel,jerusalem
+italy,rome
+jamaica,kingston
+japan,tokyo
+jersey,saint helier
+jordan,amman
+kazakhstan,astana
+kenya,nairobi
+kiribati,tarawa
+north korea,pyongyang
+south korea,seoul
+kosovo,pristina
+kuwait,kuwait city
+kyrgyzstan,bishkek
+laos,vientiane
+latvia,riga
+lebanon,beirut
+lesotho,maseru
+liberia,monrovia
+libya,tripoli
+liechtenstein,vaduz
+lithuania,vilnius
+luxembourg,luxembourg
+macedonia,skopje
+madagascar,antananarivo
+malawi,lilongwe
+malaysia,kuala lumpur
+maldives,male
+mali,bamako
+malta,valletta
+marshall islands,majuro
+mauritania,nouakchott
+mauritius,port louis
+mexico,mexico city
+federated states of micronesia,palikir
+moldova,chisinau
+monaco,monaco
+mongolia,ulaanbaatar
+montenegro,podgorica
+montserrat,plymouth
+morocco,rabat
+mozambique,maputo
+namibia,windhoek
+nepal,kathmandu
+netherlands,amsterdam
+new caledonia,noumea
+new zealand,wellington
+nicaragua,managua
+niger,niamey
+nigeria,abuja
+niue,alofi
+norfolk island,kingston
+northern mariana islands,saipan
+norway,oslo
+oman,muscat
+pakistan,islamabad
+palau,melekeok
+panama,panama city
+papua new guinea,port moresby
+paraguay,asuncion
+peru,lima
+philippines,manila
+pitcairn islands,adamstown
+poland,warsaw
+portugal,lisbon
+puerto rico,san juan
+qatar,doha
+romania,bucharest
+russia,moscow
+rwanda,kigali
+saint barthelemy,gustavia
+saint helena,jamestown
+saint kitts and nevis,basseterre
+saint lucia,castries
+saint pierre and miquelon,saint-pierre
+saint vincent and the grenadines,kingstown
+samoa,apia
+san marino,san marino
+sao tome and principe,sao tome
+saudi arabia,riyadh
+senegal,dakar
+serbia,belgrade
+seychelles,victoria
+sierra leone,freetown
+singapore,singapore
+sint maarten,philipsburg
+slovakia,bratislava
+slovenia,ljubljana
+solomon islands,honiara
+somalia,mogadishu
+south africa,pretoria
+south sudan,juba
+spain,madrid
+sri lanka,colombo
+sudan,khartoum
+suriname,paramaribo
+svalbard,longyearbyen
+swaziland,mbabane
+sweden,stockholm
+switzerland,bern
+syria,damascus
+taiwan,taipei
+tajikistan,dushanbe
+tanzania,dar es salaam
+thailand,bangkok
+timor-leste,dili
+togo,lome
+tonga,nuku'alofa
+trinidad and tobago,port of spain
+tunisia,tunis
+turkey,ankara
+turkmenistan,ashgabat
+turks and caicos islands,grand turk
+tuvalu,funafuti
+uganda,kampala
+ukraine,kyiv
+united arab emirates,abu dhabi
+united kingdom,london
+united states,washington
+uruguay,montevideo
+uzbekistan,tashkent
+vanuatu,port-vila
+venezuela,caracas
+vietnam,hanoi
+us virgin islands,charlotte amalie
+wallis and futuna,mata-utu
+yemen,sanaa
+zambia,lusaka
+zimbabwe,harare
+us minor outlying islands,washington
+northern cyprus,north nicosia
+british indian ocean territory,diego garcia
+#noncapitals
+palestinian_territories,gaza
+israel,jerusalem
+dead,casualties
+arrow_up,rise
+arrow_down,fall
+arrow_right,continue
+arrow_left,return
+pistol,war
+collision,violence
+sun_with_face,day
