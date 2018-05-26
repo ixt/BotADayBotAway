@@ -16,3 +16,9 @@
 [submodule "2018/01/20/eschalot"]
 	path = 2018/01/20/eschalot
 	url = https://github.com/ReclaimYourPrivacy/eschalot/
+[submodule "Tools/master"]
+	path = Tools/master
+	url = https://github.com/bpb27/twitter_scraping
+[submodule "Tools/twitter_scraping"]
+	path = Tools/twitter_scraping
+	url = https://github.com/bpb27/twitter_scraping
