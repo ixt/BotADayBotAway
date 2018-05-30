@@ -1,0 +1,70 @@
+#!/bin/bash
+# Use the Botometer API to tweet your bot score! via python & there tweep package
+# Yes I do realise it can just be done purely in python and totally doesnt need me to use T
+# But for the sake of me being able to easily move this around machines I like to have it in
+# a similar format to other scripts
+
+PYTEMP=$(mktemp)
+TEMP=$(mktemp)
+
+# Get Current Profiles keys and info
+consumer_key=$(head -5 ~/.trc \
+	| tail -1 \
+	| sed -e "s/-//g" -e "s/[[:space:]]//g")
+tail -n+$(sed -n "/$consumer_key/=" ~/.trc \
+	| head -2 \
+	| tail -1) ~/.trc \
+	| head -6 >$TEMP
+
+consumer_secret=$(grep "consumer_secret" $TEMP \
+	| cut -d: -f2 \
+	| xargs echo)
+
+access_token=$(grep "token" $TEMP \
+	| cut -d: -f2 \
+	| xargs echo)
+
+access_token_secret=$(grep "secret:" $TEMP \
+	| tail -1 \
+	| cut -d: -f2 \
+	| xargs echo)
+
+username=$(grep "username" $TEMP \
+	| tail -1 \
+	| cut -d: -f2 \
+	| xargs echo)
+
+mashape_key=$(cat ~/.mashapekey)
+
+cat <<EOF >$PYTEMP
+#!/bin/python
+import botometer
+
+mashape_key = "$mashape_key"
+twitter_app_auth = {
+      'consumer_key': '$consumer_key',
+      'consumer_secret': '$consumer_secret',
+      'access_token': '$access_token',
+      'access_token_secret': '$access_token_secret'
+}
+bom = botometer.Botometer(mashape_key=mashape_key, **twitter_app_auth)
+
+# Check a single account
+result = bom.check_account('@$username')
+
+print(result)
+EOF
+
+BOTSCOREENG=""
+BOTSCOREUNI=""
+# Output is dirty, just remove all the 'u's 
+python $PYTEMP | sed -e "s/'/\"/g;s/u\"/\"/g" > $TEMP
+cat $TEMP
+until [[ $BOTSCOREENG ]]; do
+    ENG="$(jq .cap.english $TEMP)"
+    UNI="$(jq .cap.universal $TEMP)"
+    BOTSCOREENG=$(bc -l <<<"$ENG * 100" | sed -n -e "s/\([0-9]*\.[0-9][0-9]\)[0-9]*/\1/p" | sed 's/^\./0./')
+    BOTSCOREUNI=$(bc -l <<<"$UNI * 100" | sed -n -e "s/\([0-9]*\.[0-9][0-9]\)[0-9]*/\1/p" | sed 's/^\./0./')
+    echo $ENG $BOTSCOREENG
+done
+t update "My bot score according to Botometer (botometer.iuni.iu.edu) is $BOTSCOREENG/5, ignoring the english specific stuff it is $BOTSCOREUNI/5. Have a nice day."
