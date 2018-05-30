@@ -13,6 +13,7 @@ MAKINGWORK="1"
 COUNT="0"
 CURRENTTIME=$(date +%Y-%m-%d-%H-%M)
 SCRIPTDIR=$(dirname $0)
+WORD="${1:-0}"
 
 getRandomImage(){
     echo "Getting random image"
@@ -34,7 +35,7 @@ while [ "$MAKINGWORK" == "1" ]; do
     LOOKINGFORWORD="0"
     while [ "$LOOKINGFORWORD" -lt "1" ]; do
         echo "Choosing word"
-        WORD=$(tail --lines="+800" $CORPUS | shuf | head -1)
+        [[ "${WORD}" == "0" ]] && WORD=$(tail --lines="+800" $CORPUS | shuf | head -1)
         echo "word is $WORD"
         getRandomImage $WORD
     done
@@ -57,6 +58,6 @@ echo $COUNT
 : $(( COUNT += 1 ))
 
 done
-t update "$CURRENTTIME #YOLOBot12 $IMGPAGE" -f "images/$CURRENTTIME.png" 
+t update "$CURRENTTIME "${WORD}" #YOLOBot12 $IMGPAGE" -f "images/$CURRENTTIME.png" 
 
 popd
