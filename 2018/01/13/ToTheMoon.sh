@@ -26,6 +26,7 @@ screenshot(){
 
 pushd $SCRIPTDIR 
 
+[ ! -e lastPrice ] && cp oldPrice lastPrice
 read LASTPRICE < lastPrice 
 checkPrice
 
