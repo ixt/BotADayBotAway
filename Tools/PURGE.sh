@@ -4,7 +4,7 @@ PASTDATE=$(date -d "- 29 days" +%Y-%m-%d)
 TEMP=$(mktemp)
 DELETEFILE=$(mktemp)
 
-# Tool for removing tweets from the database that are 29 dyas old and over. 
+# Tool for removing tweets from the database that are 29 days old and over. 
 # It's a bit of a hack, tweets a date, takes the JSON of that tweet and deletes
 # the tweet. Then looks for a date in the database it tweeted that was 29 days ago.
 # The tweet it finds it grabs the twitter id of and then searches the database
