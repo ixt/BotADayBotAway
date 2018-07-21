@@ -4,12 +4,13 @@ set -euo pipefail; IFS=$'\n\t'
 # tweets that aren't retweets to the DB
 
 SCRIPTDIR=$(dirname $0)
+USERID=$1
 pushd $SCRIPTDIR 
 
 # First we check if the process started already, this is useful for not eating
 # too much API while testing
 [ ! -e ".batch.tweets" ] \
-    && twurl "/1.1/statuses/home_timeline.json?count=200&tweet_mode=extended" > .batch.tweets
+    && twurl "/1.1/statuses/user_timeline.json?user_id=$USERID&count=200&tweet_mode=extended" > .batch.tweets
 
 # Next we filter out all the retweets, to reverse the output just add a "| not"
 # in the select function
