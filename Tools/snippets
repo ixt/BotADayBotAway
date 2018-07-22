@@ -1,0 +1,7 @@
+#!/bin/bash
+# RAKE all the tweets collected for a user
+./RAKE.sh/RAKE.sh <(./GETALLOFAUSER.sh $USERID | jq -r .docs[][] | sed "s@https://[\.a-zA-Z0-9/]*@@g;s/@[^ ]* //g" )
+# Word frequency cut down by most common english words
+./GETALLOFAUSER.sh $USERID | jq -r .docs[][] | sed -e "s@https://[\.a-zA-Z0-9/]*@@g" -e "s/@[^ ]* //g" | sort | uniq | sed -e "s/ /\n/g" -e "s/[^a-zA-Z0-9\n]//g" | tr "[[:upper:]]" "[[:lower:]]" | sed -f <(head -7000 google-10000-english/google-10000-english.txt | sed -e 's@$@$/d@g' -e 's@^@/^@g') -e '/$[[:space:]]*^/d' | sort | uniq -c | sort -n
+
+while read ENTRY; do echo "$ENTRY" && ./GETALLOFAUSER.sh $ENTRY | jq -r .docs[][] | sed -e "s@https://[\.a-zA-Z0-9/]*@@g" -e "s/@[^ ]* //g" | sort | uniq | sed -e "s/ /\n/g" -e "s/[^a-zA-Z0-9\n]//g" | tr "[[:upper:]]" "[[:lower:]]" | sed -f <(head -5000 google-10000-english/google-10000-english.txt | sed -e 's@$@$/d@g' -e 's@^@/^@g') -e '/$[[:space:]]*^/d' | sort | uniq -c | sort -n | sed -e 's/^[^0-9]*[0-9]* //g' ; done < ../testUsers 

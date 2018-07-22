@@ -22,3 +22,6 @@
 [submodule "Tools/twitter_scraping"]
 	path = Tools/twitter_scraping
 	url = https://github.com/bpb27/twitter_scraping
+[submodule "Tools/google-10000-english"]
+	path = Tools/google-10000-english
+	url = https://github.com/first20hours/google-10000-english
