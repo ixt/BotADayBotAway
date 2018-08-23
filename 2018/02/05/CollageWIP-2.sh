@@ -1,16 +1,34 @@
 #!/bin/bash
-# Same as NOISE.sh but with an image instead of random data
+# More development on the collage bot, this changes the object detection by
+# using coprocesses to speed things up
 set -uo pipefail
 IFS=$'\n\t'
-SCRIPTDIR="/home/psifork/Projects/botadaybotaway/2018/01/10/"
+SCRIPTDIR="/home/psifork/Projects/botadaybotaway/2018/02/05"
 TEMP=$(mktemp)
 CORPUS="/home/psifork/Pkgs/google-10000-english/20k.txt"
 DARKNET="/home/psifork/Pkgs/darknet"
 WORD="${1:-}"
 LOOKINGFORWORD="0"
 NUM="0"
+FAILS="0"
 WORDLIST="word.list"
+LOCK_FILE="$SCRIPTDIR/.lock"
+
+# Trap things
+
+trap clean_up SIGHUP SIGINT SIGTERM
+
+clean_up(){
+    rm -f "$LOCK_FILE"
+    echo "Leaving GTFO"
+    exit 1
+}
+
 pushd $SCRIPTDIR >/dev/null
+
+getRandomWords() {
+    shuf $CORPUS | head -10 > $WORDLIST
+}
 
 getRandomImage() {
 	echo "Getting random image"
@@ -29,12 +47,28 @@ getRandomImage() {
 		echo "no image yet"
 	    [ "$WORD" == "" ] && WORD=$(tail --lines="+2000" $CORPUS | shuf | tail -1)
 	    [[ "${2:-not e}" != "E" ]] && echo "word is $WORD"
+        : $(( FAILS += 1))
+        if [ ${FAILS} == 5 ]; then
+            FAILS=0
+            WORD=""
+        fi
 	else
 		echo "image url is $IMGURL"
 		wget $IMGURL -O current.$IMGEXT
 		LOOKINGFORWORD="1"
 	fi
 }
+
+# Coprocess the darknet interactive terminal
+coproc DARK { \
+    pushd $DARKNET;
+    ./darknet detect \
+    cfg/yolov2-tiny.cfg \
+    yolov2-tiny.weights ; \
+    popd; \
+} &2>&1 >/dev/null
+
+getRandomWords
 
 while read WORD; do 
 
@@ -66,7 +100,16 @@ echo $COLORS
 convert "current.$IMGEXT" -resize 800x "resized.current.png"
 
 pushd $DARKNET
-./darknet detect cfg/yolov3.cfg yolov3.weights $SCRIPTDIR/resized.current.png -thresh 0.1
+printf "" > "$DARKNET/predictions.json"
+
+# Give the coproc the file name 
+echo "$SCRIPTDIR/resized.current.png" >&"${DARK[1]}"
+
+# Wait for the file to write
+while :; do
+    grep -q -F "[" "$DARKNET/predictions.json" && break
+done
+
 LOOKINGFORWORD="0"
 if ! grep "^0" <(du predictions.json); then
 	MAKINGWORK="0"
@@ -75,7 +118,7 @@ if ! grep "^0" <(du predictions.json); then
 		pushd $SCRIPTDIR
 		echo PREDICTION: $PREDICTION
 		IFS=, read -a VALUES <<<"$PREDICTION"
-		convert resized.current.png \
+		convert current.$IMGEXT \
 			-crop ${VALUES[2]}x${VALUES[3]}+${VALUES[0]}+${VALUES[1]} \
 			+repage uncut.current.png.$NUM
         if [[ $? == 0 ]]; then  
@@ -84,7 +127,7 @@ if ! grep "^0" <(du predictions.json); then
 		while [ -e "uncut.current.png.$NUM" ]; do
 			: $((NUM += 1))
 		done
-		convert output.png +repage current.png.$NUM
+		convert output.png -compose plus -trim +repage -transparent black current.png.$NUM
         fi
 		rm uncut*
 		popd
@@ -102,13 +145,16 @@ else
 fi
 popd
 
+
+printf "" > "$DARKNET/predictions.json"
 done < <(cat $WORDLIST)
 
-convert -size 1024x1024 current.png.* -transparent black -set page '+%[fx:200*cos((t/n)*2*pi)]+%[fx:200*sin((t/n)*2*pi)]' -layers merge -transparent white collage.png 
+# convert -size 1024x1024 current.png.* -transparent black -set page '+%[fx:200*cos((t/n)*2*pi)]+%[fx:200*sin((t/n)*2*pi)]' -layers merge -transparent white collage.png 
+convert current.png.* -transparent black -set page '+%[fx:200*cos((t/n)*2*pi)]+%[fx:200*sin((t/n)*2*pi)]' -layers merge -transparent white collage.png 
 convert -size 1024x1024 gradient:$COLORS gradient.png
 composite -gravity center collage.png gradient.png aNewImage.png
 
 t update "Test" -f aNewImage.png
 #display aNewImage.png
-#rm *.png* current.$IMGEXT
+rm *.png* current.$IMGEXT
 popd >/dev/null
