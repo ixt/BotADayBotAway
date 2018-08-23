@@ -2,10 +2,10 @@
 # Same as NOISE.sh but with an image instead of random data
 set -uo pipefail
 IFS=$'\n\t'
-SCRIPTDIR="/home/orange/Projects/BotADay/2018/01/10/"
+SCRIPTDIR="/home/psifork/Projects/botadaybotaway/2018/01/10/"
 TEMP=$(mktemp)
-CORPUS="/home/orange/Pkgs/google-10000-english/20k.txt"
-DARKNET="/home/orange/Pkgs/darknet-ixt"
+CORPUS="/home/psifork/Pkgs/google-10000-english/20k.txt"
+DARKNET="/home/psifork/Pkgs/darknet"
 WORD="${1:-}"
 LOOKINGFORWORD="0"
 NUM="0"
@@ -108,7 +108,7 @@ convert -size 1024x1024 current.png.* -transparent black -set page '+%[fx:200*co
 convert -size 1024x1024 gradient:$COLORS gradient.png
 composite -gravity center collage.png gradient.png aNewImage.png
 
-#t update "$WORD" -f aNewImage.png
-display aNewImage.png
-rm *.png* current.$IMGEXT
+t update "Test" -f aNewImage.png
+#display aNewImage.png
+#rm *.png* current.$IMGEXT
 popd >/dev/null
