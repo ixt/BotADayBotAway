@@ -27,7 +27,7 @@ clean_up(){
 pushd $SCRIPTDIR >/dev/null
 
 getRandomWords() {
-    shuf $CORPUS | head -10 > $WORDLIST
+    shuf $CORPUS | head -20 > $WORDLIST
 }
 
 getRandomImage() {
@@ -122,8 +122,8 @@ if ! grep "^0" <(du predictions.json); then
 			-crop ${VALUES[2]}x${VALUES[3]}+${VALUES[0]}+${VALUES[1]} \
 			+repage uncut.current.png.$NUM
         if [[ $? == 0 ]]; then  
-		cp uncut.current.png.$NUM current.png
-		python ./grabcut.py
+		cp uncut.current.png.$NUM output.png
+		#python ./grabcut.py
 		while [ -e "uncut.current.png.$NUM" ]; do
 			: $((NUM += 1))
 		done
@@ -131,7 +131,7 @@ if ! grep "^0" <(du predictions.json); then
         fi
 		rm uncut*
 		popd
-    done < <(jq -r  ".[] | [.x1, .y1, (.width | floor) , ( .height | floor ), .label] | @csv " predictions.json | shuf | head -1)
+    done < <(jq -r  ".[] | [.x1, .y1, (.width | floor) , ( .height | floor ), .label] | @csv " predictions.json | shuf)
 else
 	MAKINGWORK="0"
 	pushd $SCRIPTDIR
