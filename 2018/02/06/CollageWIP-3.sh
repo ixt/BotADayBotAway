@@ -86,7 +86,7 @@ getPredictions(){
 }
 
 while ! [[ -e "source.png" ]]; do
-    TARGET=$(tail +30 $CORPUS | shuf -n1)
+    TARGET=${1:-$(tail +30 $CORPUS | shuf -n1)}
     rm $DARKNET/predictions.png >/dev/null
     getRandomImage "$TARGET" "source.png"
 
