@@ -69,6 +69,7 @@ getRandomImage() {
     convert $WORD.$EXT -resize x800 $OUTPUT.tmp
     mv $OUTPUT.tmp $OUTPUT
     rm $WORD.jpg &>/dev/null
+    ls
 }
 
 buildCorpus(){
@@ -110,9 +111,11 @@ tryFindRelatedImage(){
                 while [[ "$count" -le "3" ]]; do
                     printf "Let's try that again $count/3\n"
                     getRandomImage $word
-                    [[ "$?" == 2 ]] && $(( count += 1 ))
+                    local ERROR=$?
+                    [[ "$ERROR" != "0" ]] && echo $(( count = count + 1 ))
+                    [[ "$ERROR" == "0" ]] && count=4 && printf "Done! \"$word\"\n" && return 0
                 done
-                printf "3 Attempts to download that image were made but no progress happened, whats up?\n"
+                [[ "$count" == "3" ]] && printf "3 Attempts to download that image were made but no progress happened, whats up?\n"
             ;;
             *)    
                 printf "Oh no! How is this even supposed to happen?\n"
@@ -144,15 +147,15 @@ getAnImage(){
             tryFindRelatedImage $_TEMPCORPUS
         ;;
         2)  
-            count="1"
+            local count="1"
             while [[ "$count" -le "3" ]]; do
                 printf "Let's try that again $count/3\n"
                 getRandomImage $PHRASE
-                [[ "$?" != "0" ]] && echo $(( count += 1 ))
-                [[ "$?" == "0" ]] && break
+                local ERROR=$?
+                [[ "$ERROR" != "0" ]] && echo $(( count = count + 1 ))
+                [[ "$ERROR" == "0" ]] && count=4 && printf "Done! \"$word\"\n" && return 0
             done
             [[ "$count" == "3" ]] && printf "3 Attempts to download that image were made but no progress happened, whats up?\n"
-            
         ;;
         *)    
             printf "Oh no! How is this even supposed to happen?\n"
