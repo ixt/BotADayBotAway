@@ -69,7 +69,7 @@ getRandomImage() {
     convert $WORD.$EXT -resize x800 $OUTPUT.tmp
     mv $OUTPUT.tmp $OUTPUT
     rm $WORD.jpg &>/dev/null
-    ls
+    return 0
 }
 
 buildCorpus(){
@@ -95,7 +95,9 @@ buildCorpus(){
 
 tryFindRelatedImage(){
     local _CORPUS=$(mktemp)
-    cp $1 $_CORPUS 
+    local PHRASE=$1
+    local OUTPUT=${2:-$PHRASE.png}
+    buildCorpus $PHRASE $_CORPUS
     while read word; do
         getRandomImage $word
         case $? in
@@ -103,16 +105,13 @@ tryFindRelatedImage(){
                 printf "Done! \"$word\"\n"
                 return 0    
             ;;
-            1)
-                continue
-            ;;
             2)
                 local count="1"
                 while [[ "$count" -le "3" ]]; do
                     printf "Let's try that again $count/3\n"
                     getRandomImage $word
                     local ERROR=$?
-                    [[ "$ERROR" != "0" ]] && echo $(( count = count + 1 ))
+                    [[ "$ERROR" != "0" ]] && (( count = count + 1 ))
                     [[ "$ERROR" == "0" ]] && count=4 && printf "Done! \"$word\"\n" && return 0
                 done
                 [[ "$count" == "3" ]] && printf "3 Attempts to download that image were made but no progress happened, whats up?\n"
@@ -124,11 +123,29 @@ tryFindRelatedImage(){
             esac
     done < $_CORPUS
 
-    while read word; do
-        tryFindRelatedImage $_CORPUS
-    done < $_CORPUS
+    # Ultram clause
+    local NEWWORD="$( lynx -dump -nolist -nonumbers "https://duckduckgo.com/?q=$PHRASE" \
+        | sed -e "s/ /\n/g" \
+        | sed -e "/[^a-zA-Z]/d;/^$/d" \
+        | tr '[[:upper:]]' '[[:lower:]]' \
+        | sort \
+        | uniq -c \
+        | sort -r -n \
+        | head -1 \
+        | xargs echo \
+        | cut -d" " -f2)"
+    echo "Trying $NEWWORD"
+    local ucount="1"
+    while [[ "$ucount" -le "3" ]]; do
+        printf "Let's try (ultram) $ucount/3\n"
+        getRandomImage $NEWWORD $OUTPUT
+        local ERROR=$?
+        [[ "$ERROR" != "0" ]] && (( ucount = ucount + 1 ))
+        [[ "$ERROR" == "0" ]] && count=4 && printf "Done! \"$NEWWORD\"\n" && return 0
+    done
+    [[ "$ucount" == "3" ]] && printf "3 Attempts to download that image were made but no progress happened, whats up?\n"
 
-    printf "Oh no! How is this even supposed to happen?\n"
+    printf "(RELATED IMAGE) Oh no! How is this even supposed to happen?\n"
     return 1
     
 }
@@ -143,22 +160,22 @@ getAnImage(){
             return 0
         ;;
         1)    
-            buildCorpus $PHRASE $_TEMPCORPUS
-            tryFindRelatedImage $_TEMPCORPUS
+            tryFindRelatedImage $PHRASE $OUTPUT
         ;;
         2)  
             local count="1"
             while [[ "$count" -le "3" ]]; do
-                printf "Let's try that again $count/3\n"
-                getRandomImage $PHRASE
+                printf "Let's try that again (regular get) $count/3\n"
+                getRandomImage $PHRASE $OUTPUT
                 local ERROR=$?
-                [[ "$ERROR" != "0" ]] && echo $(( count = count + 1 ))
-                [[ "$ERROR" == "0" ]] && count=4 && printf "Done! \"$word\"\n" && return 0
+                [[ "$ERROR" != "0" ]] && (( count = count + 1 ))
+                [[ "$ERROR" == "0" ]] && count=4 && printf "Done! \"$PHRASE\"\n" && return 0
             done
             [[ "$count" == "3" ]] && printf "3 Attempts to download that image were made but no progress happened, whats up?\n"
+            [[ "$ERROR" != "0" ]] && tryFindRelatedImage $PHRASE $OUTPUT
         ;;
         *)    
-            printf "Oh no! How is this even supposed to happen?\n"
+            printf "(REGULAR GET) Oh no! How is this even supposed to happen?\n"
             return 1
         ;;
     esac
@@ -238,8 +255,9 @@ while read WORD; do
         sed -n ${PREDICTIONLINE}p $WORD.csv
 	    convert $WORD.png \
 	    	-crop ${VALUES[2]}x${VALUES[3]}+${VALUES[0]}+${VALUES[1]} \
-	    	+repage cut.$WORD.png
-        mv cut.$WORD.png $WORD.png
+	    	+repage current.png
+        python grabcut.py
+        mv grabcut.png $WORD.png
     done
 done < <(cut -d'"' -f2 $TEMP | sed "s/:.*//g" | sort | uniq )
 
