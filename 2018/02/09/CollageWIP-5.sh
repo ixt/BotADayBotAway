@@ -19,18 +19,19 @@ trap clean_up SIGHUP SIGINT SIGTERM
 
 clean_up(){
     rm -f "$LOCK_FILE" $SCRIPTDIR/*.csv $SCRIPTDIR/*.png $SCRIPTDIR/*.jpg 
-    echo "Leaving GTFO"
+    echo "Leaving COLLAGEBOT"
     exit 1
 }
 
 
 getRandomImage() {
     local WORD=$1
+    local OUTPUT=${2:-$WORD.png}
     local _SEARCHRESULTS=$(mktemp)
     local _IMAGESONPAGE=$(mktemp)
 
     # Do a search on snappygoat for the phrase
-	printf "Getting: $WORD\n"
+	printf "Getting Random Image: $WORD\n"
 	lynx -dump -listonly "https://snappygoat.com/s/?q=$WORD" \
 		| grep -o "https://snappygoat.com/free.*" \
 		| shuf > $_SEARCHRESULTS
@@ -63,19 +64,19 @@ getRandomImage() {
             WORD=""
         fi
 	else
-		curl $IMAGEURL -o $WORD.$EXT -#
+		curl "$IMAGEURL" -o "tmp.$EXT" -#
 		LOOKINGFORWORD="1"
 	fi
-    convert $WORD.$EXT -resize x800 $OUTPUT.tmp
+    convert tmp.$EXT -resize x800 $OUTPUT.tmp
     mv $OUTPUT.tmp $OUTPUT
-    rm $WORD.jpg &>/dev/null
+    rm tmp.jpg &>/dev/null
     return 0
 }
 
 buildCorpus(){
     # Clean the input for conceptnet
-    local PHRASE="$(echo $1 | tr '[:upper:]' '[:lower:]')"
-    local OUTPUT="$2"
+    local PHRASE=$(echo $1 | tr '[:upper:]' '[:lower:]')
+    local OUTPUT=$2
     local CORPUS=$(mktemp)
     local JSON=$(mktemp)
     printf "Building corpus for: $PHRASE\n"
@@ -97,19 +98,23 @@ tryFindRelatedImage(){
     local _CORPUS=$(mktemp)
     local PHRASE=$1
     local OUTPUT=${2:-$PHRASE.png}
+    printf "Finding related word to: $PHRASE\n"
     buildCorpus $PHRASE $_CORPUS
     while read word; do
-        getRandomImage $word
+        getRandomImage $word $OUTPUT
         case $? in
             0)
                 printf "Done! \"$word\"\n"
                 return 0    
             ;;
+            1)
+                continue
+            ;;
             2)
                 local count="1"
                 while [[ "$count" -le "3" ]]; do
                     printf "Let's try that again $count/3\n"
-                    getRandomImage $word
+                    getRandomImage $word $OUTPUT
                     local ERROR=$?
                     [[ "$ERROR" != "0" ]] && (( count = count + 1 ))
                     [[ "$ERROR" == "0" ]] && count=4 && printf "Done! \"$word\"\n" && return 0
@@ -153,6 +158,7 @@ tryFindRelatedImage(){
 getAnImage(){ 
     local PHRASE=${1:-$(shuf -n1 $LARGECORPUS)}
     local OUTPUT=${2:-$PHRASE.png}
+    printf "Getting image of: $PHRASE\n"
     getRandomImage $PHRASE $OUTPUT
     case $? in
         0)    
@@ -183,17 +189,6 @@ getAnImage(){
 
 pushd $SCRIPTDIR >/dev/null
 
-# Coprocess the darknet interactive terminal
-printf "Starting Darknet.\n"
-coproc DARK { \
-    pushd $DARKNET;
-    ./darknet detect \
-    cfg/yolov3.cfg \
-    -thresh 0.1 \
-    yolov3.weights &>/dev/null ; \
-    popd; \
-} 
-
 getPredictions(){
     local INPUT=$1
     local OUTPUT=$2
@@ -208,38 +203,54 @@ getPredictions(){
     done
 
     # output the predictions as a csv
-    if ! grep "^0" <(du predictions.json); then
-        jq -r  ".[] | [.x1, .y1, (.width | floor) , ( .height | floor ), .label] | @csv " predictions.json > $OUTPUT
-    fi
+    jq -r  ".[] | [.x1, .y1, (.width | floor) , ( .height | floor ), .label] | @csv " predictions.json > $OUTPUT
+
     popd >/dev/null
     printf "" > "$DARKNET/predictions.json"
 }
 
-rm $DARKNET/predictions.png &>/dev/null
-rm source.png &>/dev/null
+printf "Starting new collage\n"
+
+rm source.png $DARKNET/predictions.png &>/dev/null
+
+# Coprocess the darknet interactive terminal
+printf "Starting Darknet.\n"
+coproc DARK { \
+    pushd $DARKNET;
+    ./darknet detect \
+    cfg/yolov3-tiny.cfg \
+    -thresh 0.2 \
+    yolov3-tiny.weights &>/dev/null ;
+    popd; \
+} 
+
+getSourceImage(){
+    getAnImage "$TARGET" "source.png"
+
+    getPredictions "$SCRIPTDIR/source.png" $TEMP
+    
+    while ! [[ -e $DARKNET/predictions.png ]]; do
+        [[ -e "source.png" ]] && cp $DARKNET/predictions.png predictions.png &>/dev/null
+    done
+
+    if [[ "2" -gt "$(du $TEMP | grep -o "^[0-9]*")" ]]; then
+        rm "source.png" "$DARKNET/predictions.png" "predictions.png" &>/dev/null
+    fi
+}
 
 while ! [[ -e "source.png" ]]; do
-    getAnImage "$TARGET" "source.png"
+    getSourceImage 
 done
 
-[[ -e "source.png" ]] && getPredictions "$SCRIPTDIR/source.png" $TEMP
-
-while ! [[ -e $DARKNET/predictions.png ]]; do
-    [[ -e "source.png" ]] && cp $DARKNET/predictions.png predictions.png 2>/dev/null
-done
-
-if [[ "2" -gt "$(du $TEMP | grep -o "^[0-9]*")" ]]; then
-    cat $TEMP
-    rm "source.png"
-fi
-
-PIXELCOUNT=$(identify -format "%h,%w" source.png)
+PIXELCOUNT=$(identify -format "%h,%w" "$SCRIPTDIR/source.png")
 cp source.png output.png
 
 while read WORD; do
     while ! [[ -e "$WORD.png" ]]; do
-        getAnImage $WORD
-        getPredictions "$SCRIPTDIR/$WORD.png" "$SCRIPTDIR/$WORD.csv"
+        while ! [[ -s "$SCRIPTDIR/$WORD.csv" ]]; do
+            getAnImage $WORD
+            getPredictions "$SCRIPTDIR/$WORD.png" "$SCRIPTDIR/$WORD.csv"
+        done
         if ! [[ -s $WORD.csv ]]; then
             rm "$WORD.png"
         fi
