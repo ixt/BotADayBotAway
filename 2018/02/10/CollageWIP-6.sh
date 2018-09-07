@@ -3,13 +3,10 @@
 set -uo pipefail
 IFS=$'\n\t'
 SCRIPTDIR="/home/psifork/Projects/botadaybotaway/2018/02/10"
+DARKNET="/home/psifork/Pkgs/darknet"
+LARGECORPUS="/home/psifork/Pkgs/google-10000-english/20k.txt"
 TEMP=$(mktemp)
 _TEMP=$(mktemp)
-DARKNET="/home/psifork/Pkgs/darknet"
-_TEMPCORPUS=$(mktemp)
-LARGECORPUS="/home/psifork/Pkgs/google-10000-english/20k.txt"
-NUM="0"
-FAILS="0"
 TARGET=${1:-$(tail +30 $LARGECORPUS | shuf -n1)}
 
 # Trap things
@@ -18,20 +15,18 @@ trap clean_up SIGHUP SIGINT SIGTERM
 
 clean_up(){
     rm -f $SCRIPTDIR/*.csv $SCRIPTDIR/*.png $SCRIPTDIR/*.jpg 
-    echo "Leaving COLLAGEBOT"
+    printf "Leaving COLLAGEBOT\n"
     exit 1
 }
-
 
 getRandomImage() {
     local WORD=$1
     local OUTPUT=${2:-$WORD.png}
     local _SEARCHRESULTS=$(mktemp)
-    local _IMAGESONPAGE=$(mktemp)
 
     # Do a search on snappygoat for the phrase
 	printf "Getting Random Image: $WORD\n"
-    curl "https://snappygoat.com/s/?q=fish" -q -# \
+    curl "https://snappygoat.com/s/?q=fish" -q 2>/dev/null \
         | grep "rdypush( function(){" -A 2 \
         | tail -1 \
         | sed 's/"cl":"/\n/g' \
@@ -63,17 +58,18 @@ getRandomImage() {
 		| cut -d. -f1 \
 		| rev)
 
+    # Download image
 	curl "$IMAGEURL" -o "tmp.$EXT" -#
 
     convert tmp.$EXT -resize x800 $OUTPUT.tmp
     mv $OUTPUT.tmp $OUTPUT
-    rm tmp.jpg &>/dev/null
+    rm tmp.$EXT &>/dev/null
     return 0
 }
 
 buildCorpus(){
     # Clean the input for conceptnet
-    local PHRASE=$(echo $1 | tr '[:upper:]' '[:lower:]')
+    local PHRASE=$(printf $1 | tr '[:upper:]' '[:lower:]')
     local OUTPUT=$2
     local CORPUS=$(mktemp)
     local JSON=$(mktemp)
@@ -114,10 +110,15 @@ tryFindRelatedImage(){
                     printf "Let's try that again $count/3\n"
                     getRandomImage $word $OUTPUT
                     local ERROR=$?
-                    [[ "$ERROR" != "0" ]] && (( count = count + 1 ))
-                    [[ "$ERROR" == "0" ]] && count=4 && printf "Done! \"$word\"\n" && return 0
+                    [[ "$ERROR" != "0" ]] \
+                        && (( count = count + 1 ))
+                    [[ "$ERROR" == "0" ]] \
+                        && count=4 \
+                        && printf "Done! \"$word\"\n" \
+                        && return 0
                 done
-                [[ "$count" == "3" ]] && printf "3 Attempts to download that image were made but no progress happened, whats up?\n"
+                [[ "$count" == "3" ]] \
+                    && printf "3 Attempts to download that image were made but no progress happened, whats up?\n"
             ;;
             *)    
                 printf "Oh no! How is this even supposed to happen?\n"
@@ -128,27 +129,31 @@ tryFindRelatedImage(){
 
     # Ultram clause
     while read NEWWORD; do
-    echo "Trying $NEWWORD"
-    local ucount="1"
-    while [[ "$ucount" -le "3" ]]; do
-        printf "Let's try (ultram) $ucount/3\n"
-        getRandomImage $NEWWORD $OUTPUT
-        local ERROR=$?
-        [[ "$ERROR" != "0" ]] && (( ucount = ucount + 1 ))
-        [[ "$ERROR" == "0" ]] && count=4 && printf "Done! \"$NEWWORD\"\n" && return 0
-    done
-    [[ "$ucount" == "3" ]] && printf "3 Attempts to download that image were made but no progress happened, whats up?\n"
-done < <(lynx -dump -nolist -nonumbers "https://duckduckgo.com/?q=$PHRASE" \
-        | sed -e "s/ /\n/g" \
-        | sed -e "/[^a-zA-Z]/d;/^$/d" \
-        | tr '[[:upper:]]' '[[:lower:]]' \
-        | sort \
-        | sed -e "/^$PHRASE$/d" \
-        | uniq -c \
-        | sort -r -n \
-        | sed -e "s/^[^0-9]*//g" \
-        | cut -d" " -f2 \
-        | sed -r -e "/^.{,3}$/d" )
+        printf "Trying $NEWWORD\n"
+        local ucount="1"
+        while [[ "$ucount" -le "3" ]]; do
+            printf "Let's try (ultram) $ucount/3\n"
+            getRandomImage $NEWWORD $OUTPUT
+            local ERROR=$?
+            [[ "$ERROR" != "0" ]] \
+                && (( ucount = ucount + 1 ))
+            [[ "$ERROR" == "0" ]] \
+                && count=4 \
+                && printf "Done! \"$NEWWORD\"\n" \
+                && return 0
+        done
+        [[ "$ucount" == "3" ]] && printf "3 Attempts to download that image were made but no progress happened, whats up?\n"
+    done < <(lynx -dump -nolist -nonumbers "https://duckduckgo.com/?q=$PHRASE" \
+            | sed -e "s/ /\n/g" \
+            | sed -e "/[^a-zA-Z]/d;/^$/d" \
+            | tr '[[:upper:]]' '[[:lower:]]' \
+            | sort \
+            | sed -e "/^$PHRASE$/d" \
+            | uniq -c \
+            | sort -r -n \
+            | sed -e "s/^[^0-9]*//g" \
+            | cut -d" " -f2 \
+            | sed -r -e "/^.{,3}$/d" )
 
     printf "(RELATED IMAGE) Oh no! How is this even supposed to happen?\n"
     return 1
@@ -174,11 +179,17 @@ getAnImage(){
                 printf "Let's try that again (regular get) $count/3\n"
                 getRandomImage $PHRASE $OUTPUT
                 local ERROR=$?
-                [[ "$ERROR" != "0" ]] && (( count = count + 1 ))
-                [[ "$ERROR" == "0" ]] && count=4 && printf "Done! \"$PHRASE\"\n" && return 0
+                [[ "$ERROR" != "0" ]] \
+                    && (( count = count + 1 ))
+                [[ "$ERROR" == "0" ]] \
+                    && count=4 \
+                    && printf "Done! \"$PHRASE\"\n" \
+                    && return 0
             done
-            [[ "$count" == "3" ]] && printf "3 Attempts to download that image were made but no progress happened, whats up?\n"
-            [[ "$ERROR" != "0" ]] && tryFindRelatedImage $PHRASE $OUTPUT
+            [[ "$count" == "3" ]] \
+                && printf "3 Attempts to download that image were made but no progress happened, whats up?\n"
+            [[ "$ERROR" != "0" ]] \
+                && tryFindRelatedImage $PHRASE $OUTPUT
         ;;
         *)    
             printf "(REGULAR GET) Oh no! How is this even supposed to happen?\n"
@@ -195,12 +206,14 @@ getPredictions(){
     pushd $DARKNET >/dev/null
     printf "" > "$DARKNET/predictions.json"
     # Give the coproc the file name 
-    echo "$INPUT" >&"${DARK[1]}"
+    printf "$INPUT\n" >&"${DARK[1]}"
     
     # Wait for the file to write
+    printf "Predicting...\n"
     while :; do
         grep -q -F "[" "$DARKNET/predictions.json" && break
     done
+    printf "Predicted!\n"
 
     # output the predictions as a csv
     jq -r  ".[] | [.x1, .y1, (.width | floor) , ( .height | floor ), .label] | @csv " predictions.json > $OUTPUT
@@ -219,8 +232,8 @@ coproc DARK { \
     pushd $DARKNET;
     ./darknet detect \
     cfg/yolov3-tiny.cfg \
-    -thresh 0.2 \
-    yolov3-tiny.weights &>/dev/null ;
+    -thresh 0.3 \
+    yolov3-tiny.weights;
     popd; \
 } 
 
@@ -239,6 +252,10 @@ getSourceImage(){
 }
 
 while ! [[ -e "source.png" ]]; do
+    # Having this loop means that if an image fails to have objects
+    # in then it will retry the whole process, there isnt any error
+    # checking right now, so if there will never be an image then it
+    # will just get stuck in a loop
     getSourceImage 
 done
 
@@ -267,8 +284,8 @@ while read WORD; do
 	    convert $WORD.png \
 	    	-crop ${VALUES[2]}x${VALUES[3]}+${VALUES[0]}+${VALUES[1]} \
 	    	+repage current.png
-        #python grabcut.py
-        #mv grabcut.png $WORD.png
+        # python grabcut.py
+        # mv grabcut.png $WORD.png
         mv current.png $WORD.png
     done
 done < <(cut -d'"' -f2 $TEMP | sed "s/:.*//g" | sort | uniq )
@@ -285,11 +302,13 @@ while read OBJECT; do
     # TO do this we do the multiplication of the width and height then scale it by 25% 
     # then we compare and only append the object if it smaller
     _PIXELCOUNT=$(bc -l <<< "scale=0;(${VALUES[2]} * ${VALUES[3]}) * 1.25" | cut -d. -f1)
-    [[ "${_PIXELCOUNT}" -lt "${PIXELCOUNT}" ]] && echo $OBJECT,$_PIXELCOUNT >> $_TEMP
+    [[ "${_PIXELCOUNT}" -lt "${PIXELCOUNT}" ]] \
+        && printf "$OBJECT,$_PIXELCOUNT" >> $_TEMP
 done < $TEMP
 
 # Check for objects 
-[[ "$(wc -l ${TEMP} | cut -f 1 -d' ')" -eq "0" ]] && exit 0
+[[ "$(wc -l ${TEMP} | cut -f 1 -d' ')" -eq "0" ]] \
+    && exit 0
 
 # Sort the file by last value of line such that highest value is at the top
 sort -t, -k6 $_TEMP > $TEMP
@@ -299,8 +318,8 @@ while read OBJECT; do
     # For every object take in the values and lay out the corrisponding label
     # image onto the "current image"
     IFS=, read -a VALUES <<<"$OBJECT"
-    LABEL="$(echo "${VALUES[4]}" | sed "s/:.*//g;s/\"//g")"
-    echo $LABEL, ${VALUES[0]}, ${VALUES[1]}, ${VALUES[2]}, ${VALUES[3]}
+    LABEL="$(printf "${VALUES[4]}" | sed "s/:.*//g;s/\"//g")"
+    printf "$LABEL, ${VALUES[0]}, ${VALUES[1]}, ${VALUES[2]}, ${VALUES[3]}\n"
     convert $LABEL.png -transparent black -resize ${VALUES[2]}x${VALUES[3]}\! current.png 
     convert output.png current.png -geometry +${VALUES[0]}+${VALUES[1]} -composite collage.png
     rm current.png
@@ -310,7 +329,9 @@ done < $TEMP
 # Clean up all those word files
 while read WORD; do
     rm $WORD.* 
-done < <(cut -d'"' -f2 $TEMP | sed "s/:.*//g" | sort | uniq )
+done < <(cut -d'"' -f2 $TEMP \
+            | sed "s/:.*//g" \
+            | sort -u )
 
 rm "source.png"
 
