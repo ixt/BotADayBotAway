@@ -26,7 +26,7 @@ getRandomImage() {
 
     # Do a search on snappygoat for the phrase
 	printf "Getting Random Image: $WORD\n"
-    curl "https://snappygoat.com/s/?q=fish" -q 2>/dev/null \
+    curl "https://snappygoat.com/s/?q=$WORD" -q 2>/dev/null \
         | grep "rdypush( function(){" -A 2 \
         | tail -1 \
         | sed 's/"cl":"/\n/g' \
