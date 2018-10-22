@@ -100,9 +100,7 @@
     "protectionLevel": "signature|preinstalled"
   },
   {
-    "description": "Must be required by an android.service.vr.VrListenerServic, to ensure that only the system can bind to it.  Protection level: signature"
-  },
-  {
+    "description": "Must be required by an android.service.vr.VrListenerServic, to ensure that only the system can bind to it.  Protection level: signature",
     "name": "android.permission.BIND_VR_LISTENER_SERVICE",
     "protectionLevel": "signature"
   },
@@ -232,23 +230,17 @@
     "protectionLevel": "signature"
   },
   {
-    "description": "Must be required by an android.service.dreams.DreamServic, to ensure that only the system can bind to it.  Protection level: signature"
-  },
-  {
+    "description": "Must be required by an android.service.dreams.DreamServic, to ensure that only the system can bind to it.  Protection level: signature",
     "name": "android.permission.BIND_DREAM_SERVICE",
     "protectionLevel": "signature"
   },
   {
-    "description": "Must be required by a android.service.notification.ConditionProviderServic, to ensure that only the system can bind to it.  Protection level: signature"
-  },
-  {
+    "description": "Must be required by a android.service.notification.ConditionProviderServic, to ensure that only the system can bind to it.  Protection level: signature",
     "name": "android.permission.BIND_CONDITION_PROVIDER_SERVICE",
     "protectionLevel": "signature"
   },
   {
-    "description": "Must be required by services that extend android.service.resolver.ResolverRankerServic, to ensure that only the system can bind to them.  Protection level: signature"
-  },
-  {
+    "description": "Must be required by services that extend android.service.resolver.ResolverRankerServic, to ensure that only the system can bind to them.  Protection level: signature",
     "name": "android.permission.BIND_RESOLVER_RANKER_SERVICE",
     "protectionLevel": "signature"
   },
@@ -258,9 +250,7 @@
     "protectionLevel": "signature|privileged"
   },
   {
-    "description": "Must be required by a android.service.chooser.ChooserTargetServic, to ensure that only the system can bind to it.  Protection level: signature"
-  },
-  {
+    "description": "Must be required by a android.service.chooser.ChooserTargetServic, to ensure that only the system can bind to it.  Protection level: signature",
     "name": "android.permission.BIND_CHOOSER_TARGET_SERVICE",
     "protectionLevel": "signature"
   },
@@ -270,16 +260,12 @@
     "protectionLevel": "signature"
   },
   {
-    "description": "Must be required by an android.service.notification.NotificationListenerServic, to ensure that only the system can bind to it.  Protection level: signature"
-  },
-  {
+    "description": "Must be required by an android.service.notification.NotificationListenerServic, to ensure that only the system can bind to it.  Protection level: signature",
     "name": "android.permission.BIND_NOTIFICATION_LISTENER_SERVICE",
     "protectionLevel": "signature"
   },
   {
-    "description": "Must be required by an android.service.trust.TrustAgentServic, to ensure that only the system can bind to it."
-  },
-  {
+    "description": "Must be required by an android.service.trust.TrustAgentServic, to ensure that only the system can bind to it.",
     "name": "android.permission.BIND_TRUST_AGENT",
     "protectionLevel": "signature"
   },
@@ -484,9 +470,7 @@
     "protectionLevel": "signature|privileged"
   },
   {
-    "description": "Must be required by a android.widget.RemoteViewsServic, to ensure that only the system can bind to it."
-  },
-  {
+    "description": "Must be required by a android.widget.RemoteViewsServic, to ensure that only the system can bind to it.",
     "name": "android.permission.BIND_REMOTEVIEWS",
     "protectionLevel": "signature|privileged"
   },
@@ -786,6 +770,11 @@
     "protectionLevel": "signature|installer"
   },
   {
+    "description": "Allows an application to install existing system packages. This is a limited version of INSTALL_PACKAGES.  Not for use by third-party applications.  TODO(b/80204953): remove this permission once we have a long-term solution.",
+    "name": "com.android.permission.INSTALL_EXISTING_PACKAGES",
+    "protectionLevel": "signature|privileged"
+  },
+  {
     "description": "Allows an application to install updates. This is a limited version of INSTALL_PACKAGES.  Not for use by third-party applications.",
     "name": "android.permission.INSTALL_PACKAGE_UPDATES",
     "protectionLevel": "signature|privileged"
@@ -886,9 +875,7 @@
     "protectionLevel": "signature|privileged"
   },
   {
-    "description": "Must be required by a com.android.media.remotedisplay.RemoteDisplayProvide, to ensure that only the system can bind to it."
-  },
-  {
+    "description": "Must be required by a com.android.media.remotedisplay.RemoteDisplayProvide, to ensure that only the system can bind to it.",
     "name": "android.permission.BIND_REMOTE_DISPLAY",
     "protectionLevel": "signature"
   },
@@ -913,30 +900,22 @@
     "protectionLevel": "signature"
   },
   {
-    "description": "Must be required by a android.service.autofill.AutofillServic, to ensure that only the system can bind to it.  Protection level: signature"
-  },
-  {
+    "description": "Must be required by a android.service.autofill.AutofillServic, to ensure that only the system can bind to it.  Protection level: signature",
     "name": "android.permission.BIND_AUTOFILL_SERVICE",
     "protectionLevel": "signature"
   },
   {
-    "description": "Must be required by a android.service.voice.VoiceInteractionServic, to ensure that only the system can bind to it.  Protection level: signature"
-  },
-  {
+    "description": "Must be required by a android.service.voice.VoiceInteractionServic, to ensure that only the system can bind to it.  Protection level: signature",
     "name": "android.permission.BIND_VOICE_INTERACTION",
     "protectionLevel": "signature"
   },
   {
-    "description": "Must be required by a android.service.wallpaper.WallpaperServic, to ensure that only the system can bind to it.  Protection level: signature|privileged"
-  },
-  {
+    "description": "Must be required by a android.service.wallpaper.WallpaperServic, to ensure that only the system can bind to it.  Protection level: signature|privileged",
     "name": "android.permission.BIND_WALLPAPER",
     "protectionLevel": "signature|privileged"
   },
   {
-    "description": "Must be required by a android.net.VpnServic, to ensure that only the system can bind to it.  Protection level: signature"
-  },
-  {
+    "description": "Must be required by a android.net.VpnServic, to ensure that only the system can bind to it.  Protection level: signature",
     "name": "android.permission.BIND_VPN_SERVICE",
     "protectionLevel": "signature"
   },
@@ -976,37 +955,27 @@
     "protectionLevel": "signature|preinstalled"
   },
   {
-    "description": "Must be required by a android.printservice.recommendation.RecommendationServic, to ensure that only the system can bind to it.  Protection level: signature"
-  },
-  {
+    "description": "Must be required by a android.printservice.recommendation.RecommendationServic, to ensure that only the system can bind to it.  Protection level: signature",
     "name": "android.permission.BIND_PRINT_RECOMMENDATION_SERVICE",
     "protectionLevel": "signature"
   },
   {
-    "description": "Must be required by a android.printservice.PrintServic, to ensure that only the system can bind to it.  Protection level: signature"
-  },
-  {
+    "description": "Must be required by a android.printservice.PrintServic, to ensure that only the system can bind to it.  Protection level: signature",
     "name": "android.permission.BIND_PRINT_SERVICE",
     "protectionLevel": "signature"
   },
   {
-    "description": "Must be required by an android.accessibilityservice.AccessibilityServic, to ensure that only the system can bind to it.  Protection level: signature"
-  },
-  {
+    "description": "Must be required by an android.accessibilityservice.AccessibilityServic, to ensure that only the system can bind to it.  Protection level: signature",
     "name": "android.permission.BIND_ACCESSIBILITY_SERVICE",
     "protectionLevel": "signature"
   },
   {
-    "description": "Must be required by an android.media.midi.MidiDeviceServic, to ensure that only the system can bind to it.  Protection level: signature"
-  },
-  {
+    "description": "Must be required by an android.media.midi.MidiDeviceServic, to ensure that only the system can bind to it.  Protection level: signature",
     "name": "android.permission.BIND_MIDI_DEVICE_SERVICE",
     "protectionLevel": "signature"
   },
   {
-    "description": "Must be required by an android.inputmethodservice.InputMethodServic, to ensure that only the system can bind to it.  Protection level: signature"
-  },
-  {
+    "description": "Must be required by an android.inputmethodservice.InputMethodServic, to ensure that only the system can bind to it.  Protection level: signature",
     "name": "android.permission.BIND_INPUT_METHOD",
     "protectionLevel": "signature"
   },
@@ -1381,7 +1350,7 @@
     "protectionLevel": "normal"
   },
   {
-    "description": "This permission is no longer supported.",
+    "description": "Don't use this permission in your app.This permission is no longer supported.",
     "name": "com.android.launcher.permission.UNINSTALL_SHORTCUT",
     "protectionLevel": "normal"
   },
@@ -1621,37 +1590,27 @@
     "protectionLevel": "signature|privileged"
   },
   {
-    "description": "Must be required by a android.telecom.ConnectionServic, to ensure that only the system can bind to it.  Protection level: signature|privileged"
-  },
-  {
+    "description": "Must be required by a android.telecom.ConnectionServic, to ensure that only the system can bind to it.  Protection level: signature|privileged",
     "name": "android.permission.BIND_TELECOM_CONNECTION_SERVICE",
     "protectionLevel": "signature|privileged"
   },
   {
-    "description": "Must be required by a android.telecom.ConnectionServic, to ensure that only the system can bind to it.  android.telecom.ConnectionService should require android.permission.BIND_TELECOM_CONNECTION_SERVICE instead."
-  },
-  {
+    "description": "Must be required by a android.telecom.ConnectionServic, to ensure that only the system can bind to it.  android.telecom.ConnectionService should require android.permission.BIND_TELECOM_CONNECTION_SERVICE instead.",
     "name": "android.permission.BIND_CONNECTION_SERVICE",
     "protectionLevel": "signature|privileged"
   },
   {
-    "description": "Must be required by a android.telecom.CallRedirectionServic, to ensure that only the system can bind to it.  Protection level: signature|privileged"
-  },
-  {
+    "description": "Must be required by a android.telecom.CallRedirectionServic, to ensure that only the system can bind to it.  Protection level: signature|privileged",
     "name": "android.permission.BIND_CALL_REDIRECTION_SERVICE",
     "protectionLevel": "signature|privileged"
   },
   {
-    "description": "Must be required by a android.telecom.CallScreeningServic, to ensure that only the system can bind to it.  Protection level: signature|privileged"
-  },
-  {
+    "description": "Must be required by a android.telecom.CallScreeningServic, to ensure that only the system can bind to it.  Protection level: signature|privileged",
     "name": "android.permission.BIND_SCREENING_SERVICE",
     "protectionLevel": "signature|privileged"
   },
   {
-    "description": "Must be required by a android.telecom.InCallServic, to ensure that only the system can bind to it.  Protection level: signature|privileged"
-  },
-  {
+    "description": "Must be required by a android.telecom.InCallServic, to ensure that only the system can bind to it.  Protection level: signature|privileged",
     "name": "android.permission.BIND_INCALL_SERVICE",
     "protectionLevel": "signature|privileged"
   },

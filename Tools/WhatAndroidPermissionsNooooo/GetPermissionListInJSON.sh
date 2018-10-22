@@ -45,6 +45,7 @@ cat temp.json \
     | tr -d '\r\n' \
     | sed -e 's/,}/}/g' -e 's/""/","/g' \
     | sed -e 's/""/","/g' \
+    | sed -e 's/\({"description":"[^"]*"\)},{/\1,/g' \
     | jq . \
         > Permissions.json 
 
