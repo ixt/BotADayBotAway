@@ -324,8 +324,8 @@ done < <(cut -d'"' -f2 $TEMP \
             | sort -u )
 rm "source.png"
 
-# # Posting the updates
-# ID1=$(twurl -H upload.twitter.com "/1.1/media/upload.json" -f output.png -F media -X POST | jq -r .media_id_string) 
-# TWEETID=$(twurl "/1.1/statuses/update.json" -d "media_ids=$ID1&status=CollageTest: $TARGET" | jq -r .id_str)
-# # t reply $TWEETID "Predictions:" -f predictions.png
+# Posting the updates
+ID1=$(twurl -H upload.twitter.com "/1.1/media/upload.json" -f output.png -F media -X POST | jq -r .media_id_string) 
+TWEETID=$(twurl "/1.1/statuses/update.json" -d "media_ids=$ID1&status=CollageTest: $TARGET" | jq -r .id_str)
+# t reply $TWEETID "Predictions:" -f predictions.png
 popd >/dev/null
