@@ -7,8 +7,16 @@ DARKNET="/home/psifork/Pkgs/darknet"
 LARGECORPUS="/home/psifork/Pkgs/google-10000-english/20k.txt"
 TEMP=$(mktemp)
 _TEMP=$(mktemp)
-TARGET=${1:-$(t trends -x | sed -n p | shuf -n1)}
-THRESHOLD="0.2"
+THRESHOLD="0.01"
+
+. $SCRIPTDIR/.newsapikey
+curl https://newsapi.org/v2/top-headlines -G \
+        -d language=en \
+        -d apiKey=$NEWSAPIKEY \
+            > sample.json
+
+TARGET=$(~/Projects/botadaybotaway/Tools/RAKE.sh/RAKE.sh  <(jq -r .articles[].content sample.json  | sed -e "s/\[.*\]//g" -e "/null/d" | sort -u) | cut -f 2 -d, | shuf -n 1)
+
 
 # Trap things
 trap clean_up SIGHUP SIGINT SIGTERM
@@ -326,6 +334,6 @@ rm "source.png"
 
 # Posting the updates
 ID1=$(twurl -H upload.twitter.com "/1.1/media/upload.json" -f output.png -F media -X POST | jq -r .media_id_string) 
-TWEETID=$(twurl "/1.1/statuses/update.json" -d "media_ids=$ID1&status=CollageTest: $TARGET" | jq -r .id_str)
+TWEETID=$(twurl "/1.1/statuses/update.json" -d "media_ids=$ID1&status=$TARGET" | jq -r .id_str)
 # t reply $TWEETID "Predictions:" -f predictions.png
 popd >/dev/null
