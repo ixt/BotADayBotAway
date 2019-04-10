@@ -22,8 +22,14 @@ TEMP=$(mktemp)
 pushd $SCRIPTDIR 
 
 wget -qO- 'https://www.reddit.com/r/tifu/controversial.json?t=week&limit=100' |\
-    jq .data.children[].data.title | sed -e "/ my /d;/ I /d;/ she /d" | grep -i '^"TIFU by' |\
-    sed -e 's/^"TIFU by//gI;s/"$//g' | xargs -I @ echo "Florida man arrested for @" > $TEMP
-
+    jq .data.children[].data.title \
+        | sed -e "s/ my / his /g" \
+              -e "s/I /He /g" \
+              -e "s/ me / him /g" \
+              -e "s/ I\(.\)ve / He\1s /g" \
+        | grep -i '^"TIFU by' \
+        | sed -e 's/^"TIFU by//gI;s/"$//g' \
+        | xargs -I @ echo "Florida man arrested for @" \
+            > $TEMP
 ../../../Tools/tweet.sh/tweet.sh post "$(shuf $TEMP | head -1)"
 popd
