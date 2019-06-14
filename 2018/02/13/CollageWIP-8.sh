@@ -2,9 +2,9 @@
 # More development on the collage bot
 set -uo pipefail
 IFS=$'\n\t'
-SCRIPTDIR="/home/psifork/Projects/botadaybotaway/2018/02/13"
-DARKNET="/home/psifork/Pkgs/darknet"
-LARGECORPUS="/home/psifork/Pkgs/google-10000-english/20k.txt"
+SCRIPTDIR="/home/orange/Projects/botadaybotaway/2018/02/13"
+DARKNET="/home/orange/Pkgs/darknet"
+LARGECORPUS="/home/orange/Projects/botadaybotaway/Tools/google-10000-english/20k.txt"
 TEMP=$(mktemp)
 _TEMP=$(mktemp)
 THRESHOLD="0.01"
@@ -71,19 +71,18 @@ getRandomImage() {
     # Download image
 	curl "$IMAGEURL" -o "tmp.$EXT" -#
 
-    convert tmp.$EXT -resize x800 $OUTPUT.tmp
+    convert "tmp.$EXT" -resize x800 "$OUTPUT"
     [[ "$?" -ne "0" ]] \
         && (>&2 printf "Image Download Failure\n") \
         && return 2
 
-    mv $OUTPUT.tmp $OUTPUT
     rm tmp.$EXT &>/dev/null
     return 0
 }
 buildCorpus(){
     # Clean the input for conceptnet
     local PHRASE=$(printf $1 | tr '[:upper:]' '[:lower:]')
-    local OUTPUT=$2
+    local OUTPUT="$2"
     local CORPUS=$(mktemp)
     local JSON=$(mktemp)
     printf "Building corpus for: $PHRASE\n"
@@ -98,7 +97,7 @@ buildCorpus(){
         $JSON >> $CORPUS
     # Remove duplicate entries
     sed -i -e "/^$PHRASE$/d" $CORPUS
-    awk '!seen[$0]++' $CORPUS > $OUTPUT
+    awk '!seen[$0]++' $CORPUS > "$OUTPUT"
 }
 tryFindRelatedImage(){
     local _CORPUS=$(mktemp)
@@ -107,7 +106,7 @@ tryFindRelatedImage(){
     printf "Finding related word to: $PHRASE\n"
     buildCorpus $PHRASE $_CORPUS
     while read word; do
-        getRandomImage $word $OUTPUT
+        getRandomImage "$word" "$OUTPUT"
         case $? in
             0)
                 printf "Done! \"$word\"\n"
@@ -120,7 +119,7 @@ tryFindRelatedImage(){
                 local count="1"
                 while [[ "$count" -le "3" ]]; do
                     printf "Let's try that again $count/3\n"
-                    getRandomImage $word $OUTPUT
+                    getRandomImage "$word" "$OUTPUT"
                     local ERROR=$?
                     [[ "$ERROR" != "0" ]] \
                         && (( count = count + 1 ))
@@ -145,7 +144,7 @@ tryFindRelatedImage(){
         local ucount="1"
         while [[ "$ucount" -le "3" ]]; do
             printf "Let's try (ultram) $ucount/3\n"
-            getRandomImage $NEWWORD $OUTPUT
+            getRandomImage "$NEWWORD" "$OUTPUT"
             local ERROR=$?
             [[ "$ERROR" != "0" ]] \
                 && (( ucount = ucount + 1 ))
@@ -171,22 +170,22 @@ tryFindRelatedImage(){
     return 1
 }
 getAnImage(){ 
-    local PHRASE=${1:-$(shuf -n1 $LARGECORPUS)}
-    local OUTPUT=${2:-$PHRASE.png}
-    getRandomImage $PHRASE $OUTPUT
+    local PHRASE="${1:-$(shuf -n1 $LARGECORPUS)}"
+    local OUTPUT="${2:-$PHRASE.png}"
+    getRandomImage "$PHRASE" "$OUTPUT"
     case $? in
         0)    
             printf "Done!\n"
             return 0
         ;;
         1)    
-            tryFindRelatedImage $PHRASE $OUTPUT
+            tryFindRelatedImage "$PHRASE" "$OUTPUT"
         ;;
         2)  
             local count="1"
             while [[ "$count" -le "3" ]]; do
                 printf "Let's try that again (regular get) $count/3\n"
-                getRandomImage $PHRASE $OUTPUT
+                getRandomImage "$PHRASE" "$OUTPUT"
                 local ERROR=$?
                 [[ "$ERROR" != "0" ]] \
                     && (( count = count + 1 ))
@@ -198,7 +197,7 @@ getAnImage(){
             [[ "$count" == "3" ]] \
                 && printf "3 Attempts to download that image were made but no progress happened, whats up?\n"
             [[ "$ERROR" != "0" ]] \
-                && tryFindRelatedImage $PHRASE $OUTPUT
+                && tryFindRelatedImage "$PHRASE" "$OUTPUT"
         ;;
         *)    
             printf "(REGULAR GET) Oh no! How is this even supposed to happen?\n"
@@ -208,8 +207,8 @@ getAnImage(){
 }
 pushd $SCRIPTDIR >/dev/null
 getPredictions(){
-    local INPUT=$1
-    local OUTPUT=$2
+    local INPUT="$1"
+    local OUTPUT="$2"
     pushd $DARKNET >/dev/null
     printf "" > "$DARKNET/predictions.json"
     # Give the coproc the file name 
@@ -223,13 +222,13 @@ getPredictions(){
     printf "Predicted!\n"
 
     # output the predictions as a csv
-    jq -r  ".[] | [.x1, .y1, (.width | floor) , ( .height | floor ), .label] | @csv " predictions.json > $OUTPUT
+    jq -r  ".[] | [.x1, .y1, (.width | floor) , ( .height | floor ), .label] | @csv " predictions.json > "$OUTPUT"
 
     popd >/dev/null
     printf "" > "$DARKNET/predictions.json"
 }
 printf "Starting new collage\n"
-rm source.png $DARKNET/predictions.png &>/dev/null
+rm source.png $DARKNET/predictions.jpg &>/dev/null
 # Coprocess the darknet interactive terminal
 printf "Starting Darknet.\n"
 coproc DARK { \
@@ -245,12 +244,12 @@ getSourceImage(){
 
     getPredictions "$SCRIPTDIR/source.png" $TEMP
     
-    while ! [[ -e $DARKNET/predictions.png ]]; do
-        [[ -e "source.png" ]] && cp $DARKNET/predictions.png predictions.png &>/dev/null
+    while ! [[ -e $DARKNET/predictions.jpg ]]; do
+        [[ -e "source.png" ]] && cp $DARKNET/predictions.jpg predictions.jpg &>/dev/null
     done
 
     if [[ "2" -gt "$(du $TEMP | grep -o "^[0-9]*")" ]]; then
-        rm "source.png" "$DARKNET/predictions.png" "predictions.png" &>/dev/null
+        rm "source.png" "$DARKNET/predictions.jpg" "predictions.jpg" &>/dev/null
     fi
 }
 while ! [[ -e "source.png" ]]; do
@@ -265,27 +264,31 @@ PIXELCOUNT=$(identify -format "%h,%w" "$SCRIPTDIR/source.png")
 cp source.png output.png
 
 while read WORD; do
-    while ! [[ -e "$WORD.png" ]]; do
-        while ! [[ -s "$SCRIPTDIR/$WORD.csv" ]]; do
-            getAnImage $WORD
-            getPredictions "$SCRIPTDIR/$WORD.png" "$SCRIPTDIR/$WORD.csv"
-        done
-        if ! [[ -s $WORD.csv ]]; then
-            rm "$WORD.png"
-        fi
+    WORDFILE=$(sed -e "s/, /_/g" <<< "$WORD")
+    while ! [[ -e "$WORDFILE.png" ]]; do
+        # while ! [[ -s "$SCRIPTDIR/$WORDFILE.csv" ]]; do
+            getAnImage "$WORD" "$SCRIPTDIR/$WORDFILE.png"
+            # getPredictions "$SCRIPTDIR/$WORDFILE.png" "$SCRIPTDIR/$WORDFILE.csv"
+        # done
+        # if ! [[ -s $WORDFILE.csv ]]; then
+        #     rm "$WORDFILE.png"
+        # fi
         # Get the object most likely to be the requested word
-        PREDICTIONLINE=$( grep -no "${WORD}\:[0-9][0-9]" $WORD.csv \
-                | sed "s/\:/ /g" \
-                | sort -k 3 \
-                | tail -1 \
-                | cut -d" " -f1 )
+        # PREDICTIONLINE=$( grep -no "${WORD}\:[0-9][0-9]" $WORDFILE.csv \
+        #         | sed "s/\:/ /g" \
+        #         | sort -k 3 \
+        #         | tail -1 \
+        #         | cut -d" " -f1 )
         # Put prediction of that object into VALUES array and the crop to new image
-        IFS=, read -a VALUES <<<"$(sed -n ${PREDICTIONLINE}p $WORD.csv)"
-	    convert $WORD.png \
-	    	-crop ${VALUES[2]}x${VALUES[3]}+${VALUES[0]}+${VALUES[1]} \
-	    	+repage current.png
+        # IFS=, read -a VALUES <<<"$(sed -n ${PREDICTIONLINE}p $WORDFILE.csv)"
+	    # convert "$WORDFILE.png" \
+	    # 	-crop ${VALUES[2]}x${VALUES[3]}+${VALUES[0]}+${VALUES[1]} \
+	    # 	+repage current.png
+        if ! [[ -e current.png ]]; then
+            convert "$WORDFILE.png" -resize x500 current.png
+        fi
         python grabcut.py
-        mv grabcut.png $WORD.png
+        mv grabcut.png "$WORDFILE.png"
         #mv current.png $WORD.png
     done
 done < <(cut -d'"' -f2 $TEMP | sed "s/:.*//g" | sort | uniq )
@@ -304,21 +307,21 @@ while read OBJECT; do
         && printf "$OBJECT,$_PIXELCOUNT" >> $_TEMP
 done < $TEMP
 
-cat $TEMP
-
 # Check for objects 
 [[ "$(wc -l ${TEMP} | cut -f 1 -d' ')" -eq "0" ]] \
     && exit 0
 # Sort the file by last value of line such that highest value is at the top
 sort -t, -k6 $_TEMP > $TEMP
 
+cat $TEMP
+
 while read OBJECT; do
     # For every object take in the values and lay out the corrisponding label
     # image onto the "current image"
     IFS=, read -a VALUES <<<"$OBJECT"
-    LABEL="$(printf "${VALUES[4]}" | sed "s/:.*//g;s/\"//g")"
+	LABEL="$(printf "$(cut -d, -f5- <<< "$OBJECT")" | sed "s/:.*//g;s/\"//g" | sed -e "s/, /_/g")"
     # printf "$LABEL, ${VALUES[0]}, ${VALUES[1]}, ${VALUES[2]}, ${VALUES[3]}\n"
-    convert $LABEL.png -transparent black -resize ${VALUES[2]}x${VALUES[3]}\! current.png 
+    convert "$LABEL.png" -transparent black -resize ${VALUES[2]}x${VALUES[3]}\! current.png
     convert output.png current.png -geometry +${VALUES[0]}+${VALUES[1]} -composite collage.png
     rm current.png
     mv collage.png output.png
@@ -326,7 +329,8 @@ done < $TEMP
 
 # Clean up all those word files
 while read WORD; do
-    rm $WORD.* 
+    WORDFILE=$(sed -e "s/, /_/g" <<< "$WORD")
+    rm $WORDFILE.* 
 done < <(cut -d'"' -f2 $TEMP \
             | sed "s/:.*//g" \
             | sort -u )
@@ -335,5 +339,5 @@ rm "source.png"
 # Posting the updates
 ID1=$(twurl -H upload.twitter.com "/1.1/media/upload.json" -f output.png -F media -X POST | jq -r .media_id_string) 
 TWEETID=$(twurl "/1.1/statuses/update.json" -d "media_ids=$ID1&status=$TARGET" | jq -r .id_str)
-# t reply $TWEETID "Predictions:" -f predictions.png
+# t reply $TWEETID "Predictions:" -f predictions.jpg
 popd >/dev/null

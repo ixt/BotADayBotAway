@@ -2,9 +2,9 @@
 # More development on the collage bot
 set -uo pipefail
 IFS=$'\n\t'
-SCRIPTDIR="/home/psifork/Projects/botadaybotaway/2018/02/11"
-DARKNET="/home/psifork/Pkgs/darknet"
-LARGECORPUS="/home/psifork/Pkgs/google-10000-english/20k.txt"
+SCRIPTDIR="/home/orange/Projects/botadaybotaway/2018/02/11"
+DARKNET="/home/orange/Pkgs/darknet"
+LARGECORPUS="/home/orange/Projects/botadaybotaway/Tools/google-10000-english/20k.txt"
 TEMP=$(mktemp)
 _TEMP=$(mktemp)
 TARGET=${1:-$(tail +30 $LARGECORPUS | shuf -n1)}
@@ -12,13 +12,13 @@ TARGET=${1:-$(tail +30 $LARGECORPUS | shuf -n1)}
 # Trap things
 trap clean_up SIGHUP SIGINT SIGTERM
 clean_up(){
-    rm -f $SCRIPTDIR/*.csv $SCRIPTDIR/*.png $SCRIPTDIR/*.jpg 
+    rm -f $SCRIPTDIR/*.csv $SCRIPTDIR/*.jpg $SCRIPTDIR/*.jpg 
     printf "Leaving COLLAGEBOT\n"
     exit 1
 }
 getRandomImage() {
     local WORD=$1
-    local OUTPUT=${2:-$WORD.png}
+    local OUTPUT=${2:-$WORD.jpg}
     local _SEARCHRESULTS=$(mktemp)
 
     # Do a search on snappygoat for the phrase
@@ -94,7 +94,7 @@ buildCorpus(){
 tryFindRelatedImage(){
     local _CORPUS=$(mktemp)
     local PHRASE=$1
-    local OUTPUT=${2:-$PHRASE.png}
+    local OUTPUT=${2:-$PHRASE.jpg}
     printf "Finding related word to: $PHRASE\n"
     buildCorpus $PHRASE $_CORPUS
     while read word; do
@@ -163,7 +163,7 @@ tryFindRelatedImage(){
 }
 getAnImage(){ 
     local PHRASE=${1:-$(shuf -n1 $LARGECORPUS)}
-    local OUTPUT=${2:-$PHRASE.png}
+    local OUTPUT=${2:-$PHRASE.jpg}
     getRandomImage $PHRASE $OUTPUT
     case $? in
         0)    
@@ -214,13 +214,13 @@ getPredictions(){
     printf "Predicted!\n"
 
     # output the predictions as a csv
-    jq -r  ".[] | [.x1, .y1, (.width | floor) , ( .height | floor ), .label] | @csv " predictions.json > $OUTPUT
+    jq -r  ".[] | [.x1, .y1, (.width | floor) , ( .height | floor ), .label] | @csv " predictions.json | tee $OUTPUT
 
     popd >/dev/null
     printf "" > "$DARKNET/predictions.json"
 }
 printf "Starting new collage\n"
-rm source.png $DARKNET/predictions.png &>/dev/null
+rm source.jpg $DARKNET/predictions.jpg &>/dev/null
 # Coprocess the darknet interactive terminal
 printf "Starting Darknet.\n"
 coproc DARK { \
@@ -232,19 +232,19 @@ coproc DARK { \
     popd; \
 } 
 getSourceImage(){
-    getAnImage "$TARGET" "source.png"
+    getAnImage "$TARGET" "source.jpg"
 
-    getPredictions "$SCRIPTDIR/source.png" $TEMP
+    getPredictions "$SCRIPTDIR/source.jpg" $TEMP
     
-    while ! [[ -e $DARKNET/predictions.png ]]; do
-        [[ -e "source.png" ]] && cp $DARKNET/predictions.png predictions.png &>/dev/null
+    while ! [[ -e $DARKNET/predictions.jpg ]]; do
+        [[ -e "source.jpg" ]] && cp $DARKNET/predictions.jpg predictions.jpg &>/dev/null
     done
 
     if [[ "2" -gt "$(du $TEMP | grep -o "^[0-9]*")" ]]; then
-        rm "source.png" "$DARKNET/predictions.png" "predictions.png" &>/dev/null
+        rm "source.jpg" "$DARKNET/predictions.jpg" "predictions.jpg" &>/dev/null
     fi
 }
-while ! [[ -e "source.png" ]]; do
+while ! [[ -e "source.jpg" ]]; do
     # Having this loop means that if an image fails to have objects
     # in then it will retry the whole process, there isnt any error
     # checking right now, so if there will never be an image then it
@@ -252,17 +252,17 @@ while ! [[ -e "source.png" ]]; do
     getSourceImage 
 done
 
-PIXELCOUNT=$(identify -format "%h,%w" "$SCRIPTDIR/source.png")
-cp source.png output.png
+PIXELCOUNT=$(identify -format "%h,%w" "$SCRIPTDIR/source.jpg")
+cp source.jpg output.jpg
 
 while read WORD; do
-    while ! [[ -e "$WORD.png" ]]; do
+    while ! [[ -e "$WORD.jpg" ]]; do
         while ! [[ -s "$SCRIPTDIR/$WORD.csv" ]]; do
             getAnImage $WORD
-            getPredictions "$SCRIPTDIR/$WORD.png" "$SCRIPTDIR/$WORD.csv"
+            getPredictions "$SCRIPTDIR/$WORD.jpg" "$SCRIPTDIR/$WORD.csv"
         done
         if ! [[ -s $WORD.csv ]]; then
-            rm "$WORD.png"
+            rm "$WORD.jpg"
         fi
         # Get the object most likely to be the requested word
         PREDICTIONLINE=$( grep -no "${WORD}\:[0-9][0-9]" $WORD.csv \
@@ -272,12 +272,12 @@ while read WORD; do
                 | cut -d" " -f1 )
         # Put prediction of that object into VALUES array and the crop to new image
         IFS=, read -a VALUES <<<"$(sed -n ${PREDICTIONLINE}p $WORD.csv)"
-	    convert $WORD.png \
+	    convert $WORD.jpg \
 	    	-crop ${VALUES[2]}x${VALUES[3]}+${VALUES[0]}+${VALUES[1]} \
-	    	+repage current.png
+	    	+repage current.jpg
         # python grabcut.py
-        # mv grabcut.png $WORD.png
-        mv current.png $WORD.png
+        # mv grabcut.jpg $WORD.jpg
+        mv current.jpg $WORD.jpg
     done
 done < <(cut -d'"' -f2 $TEMP | sed "s/:.*//g" | sort | uniq )
 
@@ -307,10 +307,10 @@ while read OBJECT; do
     IFS=, read -a VALUES <<<"$OBJECT"
     LABEL="$(printf "${VALUES[4]}" | sed "s/:.*//g;s/\"//g")"
     # printf "$LABEL, ${VALUES[0]}, ${VALUES[1]}, ${VALUES[2]}, ${VALUES[3]}\n"
-    convert $LABEL.png -transparent black -resize ${VALUES[2]}x${VALUES[3]}\! current.png 
-    convert output.png current.png -geometry +${VALUES[0]}+${VALUES[1]} -composite collage.png
-    rm current.png
-    mv collage.png output.png
+    convert $LABEL.jpg -transparent black -resize ${VALUES[2]}x${VALUES[3]}\! current.jpg 
+    convert output.jpg current.jpg -geometry +${VALUES[0]}+${VALUES[1]} -composite collage.jpg
+    rm current.jpg
+    mv collage.jpg output.jpg
 done < $TEMP
 
 # Clean up all those word files
@@ -319,10 +319,10 @@ while read WORD; do
 done < <(cut -d'"' -f2 $TEMP \
             | sed "s/:.*//g" \
             | sort -u )
-rm "source.png"
+rm "source.jpg"
 
 # Posting the updates
-ID1=$(twurl -H upload.twitter.com "/1.1/media/upload.json" -f output.png -F media -X POST | jq -r .media_id_string) 
+ID1=$(twurl -H upload.twitter.com "/1.1/media/upload.json" -f output.jpg -F media -X POST | jq -r .media_id_string) 
 TWEETID=$(twurl "/1.1/statuses/update.json" -d "media_ids=$ID1&status=CollageTest: $TARGET" | jq -r .id_str)
-# t reply $TWEETID "Predictions:" -f predictions.png
+# t reply $TWEETID "Predictions:" -f predictions.jpg
 popd >/dev/null
