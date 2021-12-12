@@ -3,6 +3,8 @@
 #   ChildTraffking.sh - Tracks recently sold cyberkidz nfts and tweets them out
 # 
 temp=$(mktemp)
+SCRIPTDIR=$(dirname $0)
+pushd $SCRIPTDIR 
 pushd npm &>/dev/null
 node app.js > $temp
 popd &>/dev/null
@@ -34,4 +36,4 @@ if [[ $(wc -l < messages.txt) -gt 56 ]]; then
 fi
 
 rm $temp
-
+popd
