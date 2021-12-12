@@ -1,0 +1,9 @@
+{
+  "name": "cyberkidzwatchtwitter",
+  "version": "1.0.0",
+  "description": "CyberKidz Twitter",
+  "main": "app.js",
+  "dependencies": {
+    "puppeteer": "^10.4.0"
+  }
+}
