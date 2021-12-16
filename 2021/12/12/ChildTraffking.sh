@@ -21,8 +21,8 @@ while IFS=, read -a kid; do
         hashes=$(sha256sum <<<"$message")
 
         if ! grep -q "$message" messages.txt; then
-            echo "$message" # | tee -a messages.txt
-            # twurl -u CyberTraffkt -X POST -H api.twitter.com "/1.1/statuses/update.json?status=$message https://objkt.com/asset/cyberkidzclub/${kid[0]//#/}"
+            echo "$message" | tee -a messages.txt
+            twurl -u CyberTraffkt -X POST -H api.twitter.com "/1.1/statuses/update.json?status=$message https://objkt.com/asset/cyberkidzclub/${id}"
         else
             echo "seen $message"
         fi
