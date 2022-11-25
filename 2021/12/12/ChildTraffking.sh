@@ -16,8 +16,9 @@ echo $fullresults > $temp
 
 while IFS=, read -a kid; do
     if [ "${kid[0]}" != "" ]; then
-        id=${kid[0]#*\#}
-        message="CyberKid #${id} just sold for ${kid[1]}" 
+        id=$(echo ${kid[0]} | sed -e "s/.*\#\([0-9]*\).*/\1/g")
+        price=$(echo ${kid[@]} | sed 's/[^0-9. ]* ꜩ.*//g' | sed -e "s/.* //g")
+        message="CyberKid #${id} just sold for $price ꜩ" 
         hashes=$(sha256sum <<<"$message")
 
         if ! grep -q "$message" messages.txt; then

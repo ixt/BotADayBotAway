@@ -2,9 +2,9 @@
 # More development on the collage bot
 set -uo pipefail
 IFS=$'\n\t'
-SCRIPTDIR="/home/orange/Projects/botadaybotaway/2018/02/11"
+SCRIPTDIR="/home/orange/Projects/BotADayBotAway/2018/02/11"
 DARKNET="/home/orange/Pkgs/darknet"
-LARGECORPUS="/home/orange/Projects/botadaybotaway/Tools/google-10000-english/20k.txt"
+LARGECORPUS="/home/orange/Projects/BotADayBotAway/Tools/google-10000-english/20k.txt"
 TEMP=$(mktemp)
 _TEMP=$(mktemp)
 TARGET=${1:-$(tail +30 $LARGECORPUS | shuf -n1)}
@@ -24,10 +24,8 @@ getRandomImage() {
     # Do a search on snappygoat for the phrase
 	printf "Getting Random Image: $WORD\n"
     curl "https://snappygoat.com/s/?q=$WORD" -q 2>/dev/null \
-        | grep "rdypush( function(){" -A 2 \
-        | tail -1 \
-        | sed 's/"cl":"/\n/g' \
-        | cut -d'"' -f1 \
+        | grep -o 'href="/free[^"]*"' \
+        | cut -d'"' -f2 \
 	 	| shuf > $_SEARCHRESULTS
 
     printf "(Results $(wc -l $_SEARCHRESULTS | cut -d' ' -f1))\n" 

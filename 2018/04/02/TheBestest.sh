@@ -5,7 +5,7 @@ IFS=$'\n\t'
 CHARS=("▔" "▖" "▗" "▄" "▘" "▌" "▚" "▙" "▝" "▞" "▐" "▟" "▀" "▛" "▜" "▉")
 SCRIPTDIR=$(dirname $0)
 TEMP=$(mktemp)
-CORPUS="/home/psifork/Pkgs/google-10000-english/20k.txt"
+CORPUS="/home/orange/Pkgs/google-10000-english/20k.txt"
 WORD="${1:-}"
 LOOKINGFORWORD="0"
 # Declare an array for storing the array of pixels

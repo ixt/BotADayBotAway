@@ -2,20 +2,20 @@
 # More development on the collage bot
 set -uo pipefail
 IFS=$'\n\t'
-SCRIPTDIR="/home/orange/Projects/botadaybotaway/2018/02/13"
-DARKNET="/home/orange/Pkgs/darknet"
-LARGECORPUS="/home/orange/Projects/botadaybotaway/Tools/google-10000-english/20k.txt"
+SCRIPTDIR="/home/orange/Projects/BotADayBotAway/2018/02/13"
+DARKNET="/home/orange/Projects/darknet"
+LARGECORPUS="/home/orange/Projects/BotADayBotAway/Tools/google-10000-english/20k.txt"
 TEMP=$(mktemp)
 _TEMP=$(mktemp)
 THRESHOLD="0.01"
 
 . $SCRIPTDIR/.newsapikey
-curl https://newsapi.org/v2/top-headlines -G \
+curl -q https://newsapi.org/v2/top-headlines -G \
         -d language=en \
         -d apiKey=$NEWSAPIKEY \
             > sample.json
 
-TARGET=$(~/Projects/botadaybotaway/Tools/RAKE.sh/RAKE.sh  <(jq -r .articles[].content sample.json  | sed -e "s/\[.*\]//g" -e "/null/d" | sort -u) | cut -f 2 -d, | shuf -n 1)
+TARGET=$(~/Projects/BotADayBotAway/Tools/RAKE.sh/RAKE.sh  <(jq -r .articles[].content sample.json  | sed -e "s/\[.*\]//g" -e "/null/d" | sort -u) | cut -f 2 -d, | shuf -n 1)
 
 
 # Trap things
@@ -33,10 +33,8 @@ getRandomImage() {
     # Do a search on snappygoat for the phrase
 	printf "Getting Random Image: $WORD\n"
     curl "https://snappygoat.com/s/?q=$WORD" -q 2>/dev/null \
-        | grep "rdypush( function(){" -A 2 \
-        | tail -1 \
-        | sed 's/"cl":"/\n/g' \
-        | cut -d'"' -f1 \
+        | grep -o 'href="/free[^"]*"' \
+        | cut -d'"' -f2 \
 	 	| shuf > $_SEARCHRESULTS
 
     printf "(Results $(wc -l $_SEARCHRESULTS | cut -d' ' -f1))\n" 
@@ -251,6 +249,8 @@ getSourceImage(){
     if [[ "2" -gt "$(du $TEMP | grep -o "^[0-9]*")" ]]; then
         rm "source.png" "$DARKNET/predictions.jpg" "predictions.jpg" &>/dev/null
     fi
+    sleep 1s
+    cp $DARKNET/predictions.jpg sourcePredictions.jpg
 }
 while ! [[ -e "source.png" ]]; do
     # Having this loop means that if an image fails to have objects
@@ -264,32 +264,37 @@ PIXELCOUNT=$(identify -format "%h,%w" "$SCRIPTDIR/source.png")
 cp source.png output.png
 
 while read WORD; do
+    echo $WORD try
     WORDFILE=$(sed -e "s/, /_/g" <<< "$WORD")
     while ! [[ -e "$WORDFILE.png" ]]; do
-        # while ! [[ -s "$SCRIPTDIR/$WORDFILE.csv" ]]; do
+        while ! [[ -s "$SCRIPTDIR/$WORDFILE.csv" ]]; do
             getAnImage "$WORD" "$SCRIPTDIR/$WORDFILE.png"
-            # getPredictions "$SCRIPTDIR/$WORDFILE.png" "$SCRIPTDIR/$WORDFILE.csv"
-        # done
-        # if ! [[ -s $WORDFILE.csv ]]; then
-        #     rm "$WORDFILE.png"
-        # fi
+            getPredictions "$SCRIPTDIR/$WORDFILE.png" "$SCRIPTDIR/$WORDFILE.csv"
+        done
+        if ! [[ -s $WORDFILE.csv ]]; then
+             rm "$WORDFILE.png"
+        fi
         # Get the object most likely to be the requested word
-        # PREDICTIONLINE=$( grep -no "${WORD}\:[0-9][0-9]" $WORDFILE.csv \
-        #         | sed "s/\:/ /g" \
-        #         | sort -k 3 \
-        #         | tail -1 \
-        #         | cut -d" " -f1 )
+        PREDICTIONLINE=$( grep -no "${WORD}\:[0-9][0-9]" $WORDFILE.csv \
+                | sed "s/\:/ /g" \
+                | sort -k 3 \
+                | tail -1 \
+                | cut -d" " -f1 )
         # Put prediction of that object into VALUES array and the crop to new image
-        # IFS=, read -a VALUES <<<"$(sed -n ${PREDICTIONLINE}p $WORDFILE.csv)"
-	    # convert "$WORDFILE.png" \
-	    # 	-crop ${VALUES[2]}x${VALUES[3]}+${VALUES[0]}+${VALUES[1]} \
-	    # 	+repage current.png
+        IFS=, read -a VALUES <<<"$(sed -n ${PREDICTIONLINE}p $WORDFILE.csv)"
+	    convert "$WORDFILE.png" \
+	    	-crop ${VALUES[2]}x${VALUES[3]}+${VALUES[0]}+${VALUES[1]} \
+	    	+repage current.png
         if ! [[ -e current.png ]]; then
             convert "$WORDFILE.png" -resize x500 current.png
         fi
-        python grabcut.py
-        mv grabcut.png "$WORDFILE.png"
-        #mv current.png $WORD.png
+        if [[ $(( $RANDOM % 2 )) ]]; then
+            python3 grabcut.py
+            mv grabcut.png "$WORDFILE.png"
+        else
+            mv current.png $WORDFILE.png
+        fi
+        ls *.png
     done
 done < <(cut -d'"' -f2 $TEMP | sed "s/:.*//g" | sort | uniq )
 
